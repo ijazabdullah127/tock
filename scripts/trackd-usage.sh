@@ -14,8 +14,14 @@ mins=${1:-10}
 pid=${TRACKD_PID:-$(pgrep -x trackd | head -n 1 || true)}
 [ -n "$pid" ] || { echo "trackd is not running" >&2; exit 1; }
 
-# cputime as seconds, from ps's [[dd-]hh:]mm:ss.cc
+# cputime as seconds: on Linux utime + stime from /proc in clock ticks
+# (ps there shows whole seconds only); elsewhere ps's [[dd-]hh:]mm:ss.cc
 cpu() {
+	if [ -r "/proc/$pid/stat" ]; then
+		# fields after the ")" that ends the command name: utime is the 12th
+		sed 's/.*) //' "/proc/$pid/stat" | awk -v hz="$(getconf CLK_TCK)" '{ printf "%.2f\n", ($12 + $13) / hz }'
+		return
+	fi
 	ps -o time= -p "$pid" | awk '{
 		n = split($1, d, "-"); days = (n == 2) ? d[1] : 0; t = d[n]
 		k = split(t, p, ":"); s = 0

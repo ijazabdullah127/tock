@@ -85,5 +85,9 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb openbox xterm
       - name: idle cpu and memory
         env:
-          PERF_MEM_MAX_MB: "200"
+          # A fresh install measured 14 MB footprint on macOS and 18 MB RSS
+          # on Linux (2026-11-14). 30 MB catches a regression with room for
+          # runner noise. A month of history adds more on a real Mac, so this
+          # is not the 40 MB budget check; scripts/trackd-usage.sh is.
+          PERF_MEM_MAX_MB: "30"
         run: scripts/e2e/perf.sh
