@@ -29,6 +29,16 @@ type scoreJSON struct {
 	Penalty         int     `json:"penalty"`
 	SwitchesPerHour float64 `json:"switchesPerHour"`
 	TargetMS        int64   `json:"targetMS"`
+	// Weights are the terms' weights from config.toml [score], for the
+	// page's breakdown of how the parts add up to Value.
+	Weights weightsJSON `json:"weights"`
+}
+
+type weightsJSON struct {
+	Depth   float64 `json:"depth"`
+	Blocks  float64 `json:"blocks"`
+	Calm    float64 `json:"calm"`
+	Stretch float64 `json:"stretch"`
 }
 
 type statsJSON struct {
@@ -293,7 +303,8 @@ func cats(xs []report.CatRow) []catJSON {
 
 func score(sc stats.Score) scoreJSON {
 	return scoreJSON{Value: sc.Value, Depth: sc.Depth, Blocks: sc.Blocks, Calm: sc.Calm, Stretch: sc.Stretch,
-		Penalty: sc.Penalty, SwitchesPerHour: sc.SwitchesPerHour, TargetMS: sc.Target.MS}
+		Penalty: sc.Penalty, SwitchesPerHour: sc.SwitchesPerHour, TargetMS: sc.Target.MS,
+		Weights: weightsJSON{sc.Weights.Depth, sc.Weights.Blocks, sc.Weights.Calm, sc.Weights.Stretch}}
 }
 
 func (s *Server) day(r *http.Request) (any, error) {
