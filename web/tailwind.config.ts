@@ -31,6 +31,9 @@ export default {
           distract: "hsl(var(--k-distract))",
         },
       },
+      // text-faint is lighter than the faint of rules and ticks, so small
+      // text keeps a 4.5:1 contrast.
+      textColor: { faint: "hsl(var(--faint-text))" },
       borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },
     },
   },

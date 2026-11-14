@@ -12,7 +12,7 @@ export function Donut({ data, center, sub, onSelect, active }: { data: Slice[]; 
   return (
     <div className="flex items-center gap-5">
       <div className="relative h-[168px] w-[168px] shrink-0">
-        <ChartContainer config={{}} className="aspect-square h-full w-full">
+        <ChartContainer config={{}} className="aspect-square h-full w-full" aria-hidden>
           <PieChart>
             <ChartTooltip
               cursor={false}
@@ -27,7 +27,7 @@ export function Donut({ data, center, sub, onSelect, active }: { data: Slice[]; 
                 ) : null
               }
             />
-            <Pie data={data} dataKey="ms" nameKey="name" innerRadius="66%" outerRadius="100%" paddingAngle={data.length > 1 ? 1.5 : 0} strokeWidth={0} isAnimationActive={false}>
+            <Pie data={data} dataKey="ms" nameKey="name" innerRadius="66%" outerRadius="100%" paddingAngle={data.length > 1 ? 1.5 : 0} strokeWidth={0} isAnimationActive={false} rootTabIndex={-1}>
               {data.map((d) => (
                 <Cell key={d.name} fill={d.color} opacity={active && active !== d.name ? 0.25 : 1} className={onSelect ? "cursor-pointer outline-none" : undefined} onClick={() => onSelect?.(d.name)} />
               ))}

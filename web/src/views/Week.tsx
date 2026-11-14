@@ -73,7 +73,7 @@ export default function Week({ date, tick }: { date: string; tick: number }) {
       <div className={groups.focus ? "grid gap-5 lg:grid-cols-[1fr_1.4fr]" : "grid gap-5"}>
         {groups.focus && (
           <Panel label="Focus score" aside={
-            <Explain title="Focus score per day" label="How it's scored" align="end">
+            <Explain title="Focus score per day" label="How it's scored" sr="" align="end">
               <Why>Each day's score, 0–100: Focus time against your target, how much of it came in long blocks, few switches, less a point for every {STATS.penaltyPerMin} minutes of distraction. Open a day for its breakdown.</Why>
               <Why>Days with less than an hour tracked have no point. The dashed line is the mean of the days shown.</Why>
             </Explain>

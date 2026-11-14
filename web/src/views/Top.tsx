@@ -53,20 +53,33 @@ function BarList({ rows, total, onRow }: { rows: TopRow[]; total: number; onRow:
   const max = Math.max(1, ...rows.map((r) => r.ms));
   return (
     <ul className="space-y-2">
-      {rows.slice(0, 12).map((r) => (
-        <li key={r.name} className={onRow(r) ? "relative cursor-pointer rounded-[3px] hover:bg-secondary/60" : "relative"} onClick={onRow(r) ?? undefined}
-          title={r.name === "(unlabelled)" || r.mostly === "(unlabelled)" ? "Label it in the inbox" : onRow(r) ? "Open in the Library" : undefined}>
-          <div className="absolute inset-y-0 left-0 rounded-[3px] opacity-25" style={{ width: `${(r.ms / max) * 100}%`, background: kindColor(r.kind || "neutral") }} />
-          <div className="relative flex items-center gap-3 px-2 py-1">
-            <span className="min-w-0 flex-1 truncate">
-              {r.name}
-              {r.mostly && <span className="ml-2 text-xs text-muted-foreground">mostly {r.mostly}</span>}
-            </span>
-            <span className="num">{clock(r.ms)}</span>
-            <span className="num w-10 text-right text-muted-foreground">{pct(r.ms, total)}</span>
-          </div>
-        </li>
-      ))}
+      {rows.slice(0, 12).map((r) => {
+        const act = onRow(r);
+        const hint = r.name === "(unlabelled)" || r.mostly === "(unlabelled)" ? "Label it in the inbox" : act ? "Open in the Library" : undefined;
+        const body = (
+          <>
+            <div className="absolute inset-y-0 left-0 rounded-[3px] opacity-25" style={{ width: `${(r.ms / max) * 100}%`, background: kindColor(r.kind || "neutral") }} />
+            <div className="relative flex items-center gap-3 px-2 py-1">
+              <span className="min-w-0 flex-1 truncate">
+                {r.name}
+                {r.mostly && <span className="ml-2 text-xs text-muted-foreground">mostly {r.mostly}</span>}
+              </span>
+              <span className="num">{clock(r.ms)}</span>
+              <span className="num w-10 text-right text-muted-foreground">{pct(r.ms, total)}</span>
+            </div>
+          </>
+        );
+        return (
+          <li key={r.name} className="relative">
+            {act ? (
+              <button type="button" onClick={act} title={hint}
+                className="relative block w-full rounded-[3px] text-left hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                {body}
+              </button>
+            ) : <div title={hint}>{body}</div>}
+          </li>
+        );
+      })}
     </ul>
   );
 }

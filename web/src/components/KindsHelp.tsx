@@ -6,7 +6,7 @@ import { Swatch } from "@/components/charts/Swatch";
  *  with its colour and pattern and a line on what it counts as. */
 export function KindsHelp({ label = "What they mean" }: { label?: string }) {
   return (
-    <Explain title="Kinds of time" label={label} align="end" wide>
+    <Explain title="Kinds of time" label={label} sr={label === "Kind" ? ": what the kinds mean" : ""} align="end" wide>
       <Why>Every category has a kind, set in the Library. The kind decides what its time counts as:</Why>
       <dl className="space-y-1.5">
         {[...KINDS, ""].map((k) => (

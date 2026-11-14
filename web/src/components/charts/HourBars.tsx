@@ -17,8 +17,8 @@ export function HourBars({ hours, first, last, height = 220, onHour }: { hours: 
       <BarChart data={rows} margin={{ top: 4, right: 0, left: -24, bottom: 0 }} className={onHour ? "cursor-pointer" : undefined}
         onClick={(e) => e?.activeLabel !== undefined && onHour?.(Number(e.activeLabel))}>
         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
-        <XAxis dataKey="h" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint))", fontSize: 11 }} />
-        <YAxis domain={[0, 60]} ticks={[0, 15, 30, 45, 60]} tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint))", fontSize: 11 }} />
+        <XAxis dataKey="h" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint-text))", fontSize: 11 }} />
+        <YAxis domain={[0, 60]} ticks={[0, 15, 30, 45, 60]} tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint-text))", fontSize: 11 }} />
         <ChartTooltip
           cursor={{ fill: "hsl(var(--secondary))" }}
           content={({ active, payload, label }) =>

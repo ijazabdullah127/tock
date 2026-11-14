@@ -10,8 +10,8 @@ export function ScoreLine({ points, height = 200, onPoint }: { points: { label: 
       <LineChart data={points} margin={{ top: 8, right: 8, left: -24, bottom: 0 }} className={onPoint ? "cursor-pointer" : undefined}
         onClick={(e) => e?.activeTooltipIndex !== undefined && onPoint?.(e.activeTooltipIndex)}>
         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
-        <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint))", fontSize: 11 }} interval="preserveStartEnd" />
-        <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint))", fontSize: 11 }} />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint-text))", fontSize: 11 }} interval="preserveStartEnd" />
+        <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint-text))", fontSize: 11 }} />
         {mean !== null && <ReferenceLine y={mean} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" label={{ value: `mean ${mean}`, position: "insideTopRight", fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />}
         <ChartTooltip
           cursor={{ stroke: "hsl(var(--border))" }}

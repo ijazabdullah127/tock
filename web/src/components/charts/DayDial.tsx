@@ -60,7 +60,7 @@ export function DayDial({ d, onHour }: { d: Day; onHour: (h: number) => void }) 
         })}
         {[0, 6, 12, 18].map((h) => {
           const [x, y] = point(C, R - W / 2 - 19, h / 24);
-          return <text key={h} x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={10} fill="hsl(var(--faint))" className="num">{String(h).padStart(2, "0")}</text>;
+          return <text key={h} x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={10} fill="hsl(var(--faint-text))" className="num">{String(h).padStart(2, "0")}</text>;
         })}
         {d.today && (
           <g>

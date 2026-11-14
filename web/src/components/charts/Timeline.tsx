@@ -202,6 +202,7 @@ export function Timeline({ rows, outages, date, first, last, today, onPick, onRa
               onClick={() => laneFit(l)}
               onDoubleClick={(e) => e.stopPropagation()}
               title={`${l.name}: ${dur(l.ms)}. Click to zoom to it.`}
+              aria-label={`${l.name}, ${dur(l.ms)}${l.away ? "" : `, ${kindLabel(l.kind)}`}. Zoom to it`}
             >
               <span className="truncate">{l.name}</span>
               <span className="num text-xs text-muted-foreground">{dur(l.ms)}</span>

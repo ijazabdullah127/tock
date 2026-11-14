@@ -36,8 +36,8 @@ export default function Trends({ date }: { date: string }) {
           <ChartContainer config={{}} className="h-[180px] w-full">
             <BarChart data={best} margin={{ top: 4, right: 0, left: -24, bottom: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="h" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint))", fontSize: 11 }} />
-              <YAxis tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint))", fontSize: 11 }} />
+              <XAxis dataKey="h" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint-text))", fontSize: 11 }} />
+              <YAxis tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint-text))", fontSize: 11 }} />
               <ChartTooltip cursor={{ fill: "hsl(var(--secondary))" }} content={({ active, payload, label }) => active && payload?.length ? <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow">{label}:00 · {payload[0].value} min</div> : null} />
               <Bar dataKey="min" fill="hsl(var(--k-deep))" radius={[2, 2, 0, 0]} isAnimationActive={false} />
             </BarChart>

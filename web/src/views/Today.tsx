@@ -218,7 +218,7 @@ export default function Today({ date, tick }: { date: string; tick: number }) {
       {d.blocks.length > 0 && (
         <Panel label="Work blocks" aside={
           <span className="flex items-center gap-3">
-            <Explain title="Work blocks" label="What a block is" align="end">
+            <Explain title="Work blocks" label="What a block is" sr="" align="end">
               <Why>A stretch of work on one thing, named for its project, else its category, with the apps and sites that took most of it.</Why>
               <Why>The first time is all the activity in the block; the second is the Deep time in it.</Why>
             </Explain>
@@ -258,7 +258,7 @@ function ScoreHelp({ d }: { d: Day }) {
   const pts = (v: number) => (Math.round(v * 10) / 10).toString();
   const browse = d.byKind.browse ?? 0;
   return (
-    <Explain title={`Focus score ${p.value}`} label="How it's scored" align="end" wide>
+    <Explain title={`Focus score ${p.value}`} label="How it's scored" sr="" align="end" wide>
       <Why>Each part is scored 0–100 %, weighted (config.toml [score]) and added up. Distraction then takes points off.</Why>
       <table className="w-full text-left">
         <thead className="text-xs text-muted-foreground">

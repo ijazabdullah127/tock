@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, pressable, PRESSABLE } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { clock, pct } from "@/lib/format";
 import { kindColor } from "@/lib/kinds";
@@ -48,7 +48,7 @@ export function TimeTable({ rows, head, limit = 10, total, onRow, active, rowHin
           </TableRow>
         ))}
         {rest > 0 && (
-          <TableRow className="cursor-pointer" tabIndex={0} onClick={() => setAll(true)} onKeyDown={(e) => e.key === "Enter" && setAll(true)}>
+          <TableRow className={PRESSABLE} {...pressable(() => setAll(true))}>
             <TableCell className="px-0 py-1.5 text-muted-foreground underline-offset-2 hover:underline">{rows.length - limit} more</TableCell>
             <TableCell className="num px-0 py-1.5 text-right text-muted-foreground">{clock(rest)}</TableCell>
             <TableCell className="num px-0 py-1.5 text-right text-muted-foreground">{pct(rest, sum)}</TableCell>

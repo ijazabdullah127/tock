@@ -18,8 +18,8 @@ export function DayBars({ days, height = 240, onDay }: { days: DayPoint[]; heigh
       <BarChart data={rows} margin={{ top: 4, right: 0, left: -24, bottom: 0 }} className={onDay ? "cursor-pointer" : undefined}
         onClick={(e) => e?.activeTooltipIndex !== undefined && onDay?.(e.activeTooltipIndex)}>
         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
-        <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint))", fontSize: 11 }} />
-        <YAxis tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint))", fontSize: 11 }} tickFormatter={(v) => `${v}h`} allowDecimals={false} />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint-text))", fontSize: 11 }} />
+        <YAxis tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint-text))", fontSize: 11 }} tickFormatter={(v) => `${v}h`} allowDecimals={false} />
         <ChartTooltip
           cursor={{ fill: "hsl(var(--secondary))" }}
           content={({ active, payload, label }) =>

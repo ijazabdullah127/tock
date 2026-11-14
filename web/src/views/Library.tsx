@@ -15,7 +15,7 @@ import { KindsHelp } from "@/components/KindsHelp";
 import { goalTarget, isStale, matches, rateText, seenText } from "@/lib/library";
 import { labelOf, parts, ruleText, statusText } from "@/lib/rules";
 import { go, LIB_SECTIONS, type LibSection } from "@/lib/route";
-import { cn } from "@/lib/utils";
+import { cn, pressable, PRESSABLE } from "@/lib/utils";
 
 const TITLE: Record<LibSection, string> = { projects: "Projects", categories: "Categories", goals: "Goals", rules: "Rules" };
 const HIDDEN_KEY = "tock-lookalikes-hidden";
@@ -97,7 +97,7 @@ export default function Library({ tick, sub }: { tick: number; sub: LibSection }
               <TableHeader><TableRow className="hover:bg-transparent"><TableHead className={head}>On</TableHead><TableHead className={head}>Goal</TableHead></TableRow></TableHeader>
               <TableBody>
                 {lib.goals.map((g) => (
-                  <TableRow key={`${g.name}${g.week}${g.atMost}`} className="cursor-pointer" onClick={() => setEdit({ kind: "goal", item: g })}>
+                  <TableRow key={`${g.name}${g.week}${g.atMost}`} className={PRESSABLE} {...pressable(() => setEdit({ kind: "goal", item: g }))}>
                     <TableCell className={cell}>{g.name}</TableCell>
                     <TableCell className={cn(cell, "num")}>{goalTarget(g)}</TableCell>
                   </TableRow>
@@ -141,7 +141,7 @@ function Projects({ lib, now, q, staleOnly, kindOf, onEdit, onArchive }: {
   const row = (p: Lib["projects"][number]) => {
     const stale = isStale(p.lastSeenMS, now);
     return (
-      <TableRow key={p.name} className={cn("cursor-pointer", (stale || p.archived) && "text-muted-foreground")} onClick={() => onEdit(p)}>
+      <TableRow key={p.name} className={cn(PRESSABLE, (stale || p.archived) && "text-muted-foreground")} {...pressable(() => onEdit(p))}>
         <TableCell className={cn(cell, "max-w-0 truncate")}>
           {p.name}
           {p.aliases.length > 0 && <span className="ml-2 text-muted-foreground">{p.aliases.join(", ")}</span>}
@@ -164,7 +164,7 @@ function Projects({ lib, now, q, staleOnly, kindOf, onEdit, onArchive }: {
         <TableRow className="hover:bg-transparent">
           <TableHead className={head}>Project</TableHead><TableHead className={head}>Category</TableHead>
           {lib.billing !== false && <TableHead className={cn(head, "text-right")}>Rate</TableHead>}<TableHead className={cn(head, "text-right")}>30 days</TableHead>
-          <TableHead className={cn(head, "text-right")}>Last seen</TableHead><TableHead className={head} />
+          <TableHead className={cn(head, "text-right")}>Last seen</TableHead><TableHead className={head}><span className="sr-only">Actions</span></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -192,7 +192,7 @@ function Categories({ lib, now, q, staleOnly, onEdit }: { lib: Lib; now: number;
       </TableHeader>
       <TableBody>
         {rows.map((c) => (
-          <TableRow key={c.name} className={cn("cursor-pointer", isStale(c.lastSeenMS, now) && "text-muted-foreground")} onClick={() => onEdit(c)}>
+          <TableRow key={c.name} className={cn(PRESSABLE, isStale(c.lastSeenMS, now) && "text-muted-foreground")} {...pressable(() => onEdit(c))}>
             <TableCell className={cn(cell, "max-w-0 truncate")}>
               <i className="mr-2 inline-block h-2 w-2 rounded-sm align-[1px]" style={{ background: kindColor(c.kind) }} />{c.name}
               {!c.interrupt && <span className="ml-2 text-muted-foreground">never interrupts</span>}
@@ -224,7 +224,7 @@ function RulesSection({ tick, lib }: { tick: number; lib: Lib | null }) {
   const learned = shown.filter((r) => r.learned);
   const yours = shown.filter((r) => !r.learned);
   const row = (r: Rule) => (
-    <TableRow key={`${r.file}#${r.index}`} className={cn("cursor-pointer", r.status && "text-muted-foreground")} onClick={() => setOpen({ rule: r })}>
+    <TableRow key={`${r.file}#${r.index}`} className={cn(PRESSABLE, r.status && "text-muted-foreground")} {...pressable(() => setOpen({ rule: r }))}>
       <TableCell className={cn(cell, "max-w-0")}>
         <div className="flex flex-wrap gap-x-3 gap-y-0.5">
           {parts(r).map((p) => (
@@ -263,7 +263,7 @@ function RulesSection({ tick, lib }: { tick: number; lib: Lib | null }) {
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className={head}>Matches</TableHead><TableHead className={head}>Files it as</TableHead>
-                <TableHead className={cn(head, "text-right")}>{data.days} days</TableHead><TableHead className={head} />
+                <TableHead className={cn(head, "text-right")}>{data.days} days</TableHead><TableHead className={head}><span className="sr-only">Status</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

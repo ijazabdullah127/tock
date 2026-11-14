@@ -6,13 +6,15 @@ import { cn } from "@/lib/utils";
  *  made. The trigger keeps its text and gains a dotted underline; screen
  *  readers hear "<title>: how it's counted", and the panel that opens is a
  *  labelled dialog, reached and closed by keyboard like any popover. */
-export function Explain({ title, children, label, className, align = "start", wide }: {
+export function Explain({ title, children, label, className, align = "start", wide, sr = ": how it's counted" }: {
   title: string; // what the number is, e.g. "Focus time"
   label: ReactNode; // the trigger's visible text
   children: ReactNode; // the explanation
   className?: string;
   align?: "start" | "center" | "end";
   wide?: boolean;
+  sr?: string; // what screen readers hear after the label
+
 }) {
   return (
     <Popover>
@@ -25,7 +27,7 @@ export function Explain({ title, children, label, className, align = "start", wi
           )}
         >
           {label}
-          <span className="sr-only">: how it's counted</span>
+          {sr && <span className="sr-only">{sr}</span>}
         </button>
       </PopoverTrigger>
       <PopoverContent align={align} aria-label={title} className={cn("space-y-2 text-sm leading-snug", wide ? "w-96" : "w-80")}>

@@ -21,7 +21,8 @@
     --secondary-foreground: 240 3% 90%;
     --muted: 228 6% 13%;
     --muted-foreground: 228 4% 56%; /* #8b8d93 */
-    --faint: 228 5% 38%;          /* #5d5f66 */
+    --faint: 228 5% 38%;          /* #5d5f66: rules, ticks, unlabelled */
+    --faint-text: 228 5% 56%;     /* faint text, 4.5:1 on cards and popovers */
     --accent: 228 6% 15%;
     --accent-foreground: 240 3% 90%;
     --destructive: 4 50% 57%;
@@ -46,7 +47,7 @@
       --background: 0 0% 100%; --foreground: 228 9% 10%; --card: 220 14% 98%; --card-foreground: 228 9% 10%;
       --popover: 0 0% 100%; --popover-foreground: 228 9% 10%; --primary: 228 9% 10%; --primary-foreground: 0 0% 100%;
       --secondary: 220 13% 94%; --secondary-foreground: 228 9% 10%; --muted: 220 13% 95%; --muted-foreground: 225 6% 40%;
-      --faint: 225 5% 48%; --accent: 220 13% 94%; --accent-foreground: 228 9% 10%; --border: 220 13% 89%; --input: 220 13% 86%;
+      --faint: 225 5% 48%; --faint-text: 225 5% 43%; --accent: 220 13% 94%; --accent-foreground: 228 9% 10%; --border: 220 13% 89%; --input: 220 13% 86%;
       --good: 158 45% 32%; --bad: 5 55% 45%; --k-deep: 172 45% 36%; --k-shallow: 220 38% 48%; --k-browse: 286 28% 48%;
       --k-neutral: 225 5% 52%; --k-distract: 5 55% 50%; --hatch-a: 220 13% 88%; --hatch-b: 220 13% 95%; color-scheme: light;
     }
@@ -55,11 +56,14 @@
     --background: 0 0% 100%; --foreground: 228 9% 10%; --card: 220 14% 98%; --card-foreground: 228 9% 10%;
     --popover: 0 0% 100%; --popover-foreground: 228 9% 10%; --primary: 228 9% 10%; --primary-foreground: 0 0% 100%;
     --secondary: 220 13% 94%; --secondary-foreground: 228 9% 10%; --muted: 220 13% 95%; --muted-foreground: 225 6% 40%;
-    --faint: 225 5% 48%; --accent: 220 13% 94%; --accent-foreground: 228 9% 10%; --border: 220 13% 89%; --input: 220 13% 86%;
+    --faint: 225 5% 48%; --faint-text: 225 5% 43%; --accent: 220 13% 94%; --accent-foreground: 228 9% 10%; --border: 220 13% 89%; --input: 220 13% 86%;
     --good: 158 45% 32%; --bad: 5 55% 45%; --k-deep: 172 45% 36%; --k-shallow: 220 38% 48%; --k-browse: 286 28% 48%;
     --k-neutral: 225 5% 52%; --k-distract: 5 55% 50%; --hatch-a: 220 13% 88%; --hatch-b: 220 13% 95%; color-scheme: light;
   }
   * { @apply border-border; }
+  /* Every control shows where the keyboard is; controls with a ring of their
+     own (focus-visible:ring-*) turn this outline off. */
+  :focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
   html, body, #root { height: 100%; }
   body {
     @apply bg-background text-foreground font-sans antialiased;

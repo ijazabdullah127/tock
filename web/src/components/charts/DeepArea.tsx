@@ -18,8 +18,8 @@ export function DeepArea({ points, height = 220 }: { points: { label: string; ms
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
-        <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint))", fontSize: 11 }} interval="preserveStartEnd" />
-        <YAxis tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint))", fontSize: 11 }} tickFormatter={(v) => `${v}h`} allowDecimals={false} />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint-text))", fontSize: 11 }} interval="preserveStartEnd" />
+        <YAxis tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--faint-text))", fontSize: 11 }} tickFormatter={(v) => `${v}h`} allowDecimals={false} />
         <ChartTooltip
           cursor={{ stroke: "hsl(var(--border))" }}
           content={({ active, payload, label }) =>

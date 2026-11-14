@@ -13,7 +13,7 @@ export function GoalRings({ goals }: { goals: Goal[] }) {
   const data = shown.map((g) => ({ name: g.name, v: Math.min(100, share(g) * 100), fill: color(g) }));
   return (
     <div className="flex items-center gap-5">
-      <ChartContainer config={{}} className="aspect-square h-[168px] w-[168px] shrink-0">
+      <ChartContainer config={{}} className="aspect-square h-[168px] w-[168px] shrink-0" aria-hidden>
         <RadialBarChart data={data} innerRadius="30%" outerRadius="100%" startAngle={90} endAngle={-270} barSize={11}>
           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
           <RadialBar dataKey="v" background={{ fill: "hsl(var(--secondary))" }} cornerRadius={6} isAnimationActive={false} />
