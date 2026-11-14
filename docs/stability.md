@@ -37,7 +37,7 @@ Within one major version:
 
 ### Command line
 
-- Every command and flag listed by `tock help` keeps its name and meaning.
+- Every command and flag listed by `tock help all` keeps its name and meaning.
 - Exit codes keep their meaning: 0 ok, 1 error, 2 usage, 3 `tock invoice
   check` found a problem, 4 `tock invoice verify` found a file that differs.
 - Machine-readable output keeps its fields: `tock doctor --json`, `tock

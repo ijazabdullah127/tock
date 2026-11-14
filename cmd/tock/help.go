@@ -124,7 +124,7 @@ func commandHelp(name string) string {
 	if lines == "" {
 		return usage
 	}
-	return lines + "\ntock help lists every command; docs/guide.md explains each one.\n"
+	return lines + "\ntock help all lists every command; docs/guide.md explains each one.\n"
 }
 
 // helpFor is the help shown after a usage error in command name: its own
@@ -153,7 +153,7 @@ var views = map[string]string{
 // the view lives, or the pointer to the full list.
 func unknownHelp(name string) string {
 	if v, ok := views[name]; ok {
-		return v + "; tock help lists every command\n"
+		return v + "; tock help all lists every command\n"
 	}
 	best, bestD := "", 3
 	for c := range commands {
@@ -166,9 +166,9 @@ func unknownHelp(name string) string {
 		}
 	}
 	if best != "" && len(name) > 2 {
-		return fmt.Sprintf("did you mean %q? tock help lists every command\n", best)
+		return fmt.Sprintf("did you mean %q? tock help all lists every command\n", best)
 	}
-	return "tock help lists every command\n"
+	return "tock help all lists every command\n"
 }
 
 // editDistance is the Levenshtein distance between a and b.
