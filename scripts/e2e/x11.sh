@@ -9,7 +9,7 @@ sleep 2
 case $wm in
 openbox)
 	openbox &
-	export E2E_FOCUS='xdotool search --name "^{title}$" windowactivate --sync'
+	export E2E_FOCUS='xdotool search --name "^{title}$" windowactivate --sync && xdotool key Shift_L'
 	export E2E_DESKTOP=x11
 	;;
 i3)
@@ -17,14 +17,16 @@ i3)
 	sleep 2
 	I3SOCK=$(i3 --get-socketpath)
 	export I3SOCK
-	export E2E_FOCUS='i3-msg -q "[title=\"^{title}$\"] focus"'
+	export E2E_FOCUS='i3-msg -q "[title=\"^{title}$\"] focus" && xdotool key Shift_L'
 	export E2E_DESKTOP=i3
 	;;
 esac
 sleep 1
+# Shift after each focus is input: X would otherwise count the whole run
+# as idle. E2E_IDLE makes a real idle stretch by waiting with none.
 # no shell inside: Ubuntu's bash prompt would retitle the window
-xterm -T tock-e2e-alpha -e sleep 600 &
-xterm -T tock-e2e-beta -e sleep 600 &
+xterm -T tock-e2e-alpha -e sleep 1800 &
+xterm -T tock-e2e-beta -e sleep 1800 &
 sleep 2
 export E2E_TITLES=tock-e2e-alpha,tock-e2e-beta
-go test -tags e2e ./e2e -v -count=1
+go test -tags e2e ./e2e -v -count=1 -timeout 25m
