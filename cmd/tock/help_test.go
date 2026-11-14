@@ -90,7 +90,7 @@ func TestUnknownCommandSuggests(t *testing.T) {
 		{"exprt", `did you mean "export"?`},
 		{"invoices", `did you mean "invoice"?`},
 		{"week", "the week is in the terminal UI (tock) and the dashboard (tock web)"},
-		{"frobnicate", "tock help lists every command"},
+		{"frobnicate", "tock help all lists every command"},
 	} {
 		code, _ := te.run(t, "", c.cmd)
 		e := te.errb.String()
@@ -131,6 +131,28 @@ func TestHelpCommand(t *testing.T) {
 	}
 	if code, out := te.run(t, "", "help", "frob"); code != 2 || !strings.Contains(te.errb.String(), "unknown command") || out != "" {
 		t.Fatalf("help frob: %d %q %s", code, out, te.errb)
+	}
+}
+
+// tock help shows the common commands by task and points at tock help all,
+// which lists every command; tock --help is the short one too.
+func TestHelpShortAndAll(t *testing.T) {
+	te := newTestEnv(t, "")
+	for _, args := range [][]string{{"help"}, {"--help"}, {}} {
+		code, out := te.run(t, "", args...)
+		if code != 0 || !strings.Contains(out, "tock help all") || strings.Contains(out, "tock invoice") ||
+			strings.Count(out, "\n") > 35 || !strings.Contains(out, "Every day:") {
+			t.Errorf("%v: code %d, want the short help:\n%s", args, code, out)
+		}
+	}
+	code, out := te.run(t, "", "help", "all")
+	if code != 0 || out != usage {
+		t.Errorf("help all: code %d, want the full usage:\n%s", code, out)
+	}
+	for name := range commands {
+		if !strings.Contains(usage, "tock "+name+" ") && !strings.Contains(usage, "tock "+name+"\n") {
+			t.Errorf("tock help all does not list %q", name)
+		}
 	}
 }
 

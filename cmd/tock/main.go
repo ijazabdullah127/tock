@@ -27,6 +27,36 @@ import (
 	"tock/internal/suggest"
 )
 
+// shortUsage is what tock help prints: the commands most days need, by
+// task. usage, below, lists them all (tock help all).
+const shortUsage = `usage: tock <command> [flags]
+
+Every day:
+  tock                                   open the TUI (today, week, inbox, focus, rules, plan)
+  tock today                             the day so far
+  tock inbox                             unlabelled activity, numbered
+  tock tag <n> [<Category>[/<Project>]]  label it (no label: accept the suggestion)
+  tock edit                              fix the timeline: add, label or delete time
+  tock undo                              reverse the last change
+  tock web                               the dashboard in your browser
+
+Focus:
+  tock session [start [MIN] | stop]      a focus session
+  tock goal                              goals per day or week
+
+Looking back:
+  tock top [--week]                      where the time went
+  tock review                            the week, then next week's focus
+  tock export [--format csv|json]        labelled spans
+
+Setup and data:
+  tock doctor                            check trackd, permissions, rules and config
+  tock stop | tock start                 pause recording | resume it
+  tock version                           the version of this build
+
+tock help all lists every command, by task. tock <command> --help shows one.
+`
+
 const usage = `usage: tock <command> [flags]
 
 Every day:
@@ -334,6 +364,9 @@ func run(args []string, env Env) int {
 	case len(args) == 1 && (args[0] == "version" || args[0] == "--version"):
 		fmt.Fprintf(env.Stdout, "tock %s\n", version)
 		return 0
+	case len(args) == 2 && args[0] == "help" && args[1] == "all":
+		fmt.Fprint(env.Stdout, usage)
+		return 0
 	case len(args) == 2 && args[0] == "help":
 		if _, ok := commands[args[1]]; !ok {
 			fmt.Fprintf(env.Stderr, "tock: unknown command %q\n%s", args[1], unknownHelp(args[1]))
@@ -342,7 +375,7 @@ func run(args []string, env Env) int {
 		fmt.Fprint(env.Stdout, commandHelp(args[1]))
 		return 0
 	case len(args) == 0 || args[0] == "help" || isHelpFlag(args[0]):
-		fmt.Fprint(env.Stdout, usage)
+		fmt.Fprint(env.Stdout, shortUsage)
 		return 0
 	default:
 		cmd, ok := commands[args[0]]
