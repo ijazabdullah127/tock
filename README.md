@@ -60,6 +60,13 @@ A tracker sees every window you open, so it has to earn its place.
   client. Only `tock` talks to the network, for features that are off
   until you turn them on. [Privacy](docs/privacy.md) lists each one and
   what it sends.
+- **Its accuracy is measured.** On every push, CI drives a scripted
+  session on real desktops: two windows in turn for known times, then on
+  macOS and X11 a 5.5-minute stretch with no input. It compares what tock
+  recorded with the clock. The worst error seen so far was 1.5 s per
+  window or idle stretch in an 8-minute session on macOS, and 1.2 s on
+  Linux (X11, i3, Sway); the job fails above 5 s. trackd's CPU and memory
+  are checked in the same place.
 - **No telemetry.** No usage data, crash reports or analytics.
 - **It is all here to read.** MIT licensed, and Homebrew builds it from
   this source on your own Mac.
