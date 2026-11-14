@@ -2,7 +2,7 @@ import { Cell, Pie, PieChart } from "recharts";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { dur, pct } from "@/lib/format";
 
-export type Slice = { name: string; ms: number; color: string };
+export type Slice = { name: string; ms: number; color: string; hint?: string; kind?: string };
 
 /** Donut is the circular share chart: total in the middle, legend beside. */
 /** onSelect, when given, makes the legend rows and slices buttons; active
@@ -50,7 +50,7 @@ export function Donut({ data, center, sub, onSelect, active }: { data: Slice[]; 
             </>
           );
           return (
-            <li key={d.name} className={active && active !== d.name ? "opacity-50" : undefined}>
+            <li key={d.name} className={active && active !== d.name ? "opacity-50" : undefined} title={d.hint}>
               {onSelect ? (
                 <button type="button" onClick={() => onSelect(d.name)} aria-pressed={active === d.name}
                   className={`-mx-1.5 flex w-[calc(100%+0.75rem)] items-center gap-2 rounded-md px-1.5 py-0.5 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${active === d.name ? "bg-accent" : ""}`}>

@@ -12,11 +12,12 @@ import { GoalRings } from "@/components/charts/GoalRings";
 import { TimeTable } from "@/components/Tables";
 import { Explain, Sum, Why } from "@/components/Explain";
 import { STATS } from "@/lib/explain";
+import { KindsHelp } from "@/components/KindsHelp";
 import { InvoiceDialog } from "@/components/InvoiceDialog";
 import { useApi, type Hours, type Week as WeekT } from "@/lib/api";
 import { dur, hhmm, parseDate, shortDay, dayTitle, addDays, isoDate } from "@/lib/format";
 import { download } from "@/lib/download";
-import { byKindRows, kindColor, kindLabel } from "@/lib/kinds";
+import { byKindRows, kindColor, kindHelp, kindLabel } from "@/lib/kinds";
 import { onDay } from "@/lib/outage";
 import { useGroups, weekExports, type WeekExport } from "@/lib/groups";
 import { go } from "@/lib/route";
@@ -36,7 +37,7 @@ export default function Week({ date, tick }: { date: string; tick: number }) {
   const projects = w.projects.slice(0, 6);
   const billed = w.days.reduce((n, d) => n + (d.billedMS ?? 0), 0);
   const colors = ramp(projects.length);
-  const kinds = byKindRows(w.byKind).map((k) => ({ name: kindLabel(k.kind), ms: k.ms, color: kindColor(k.kind) }));
+  const kinds = byKindRows(w.byKind).map((k) => ({ name: kindLabel(k.kind), ms: k.ms, color: kindColor(k.kind), kind: k.kind, hint: kindHelp(k.kind) }));
   // The time trackd did not record, per day; not part of the bars.
   const missed = w.days.map((d) => {
     const from = parseDate(d.date);
@@ -65,7 +66,7 @@ export default function Week({ date, tick }: { date: string; tick: number }) {
             </p>
           )}
         </Panel>
-        <Panel label="Kinds of time">
+        <Panel label="Kinds of time" aside={<KindsHelp />}>
           {kinds.length ? <Donut data={kinds} center={dur(kinds.reduce((s, k) => s + k.ms, 0))} sub="this week" /> : <Empty>Nothing yet.</Empty>}
         </Panel>
       </div>

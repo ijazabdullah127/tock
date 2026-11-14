@@ -10,6 +10,22 @@ const LABELS: Record<Kind, string> = {
   distract: "Distracting",
 };
 
+// What each kind counts as, as internal/stats and internal/focus treat it
+// (and docs/guide.md's table of kinds says).
+const HELP: Record<Kind | "", string> = {
+  deep: "Focused work: only Deep time makes focus blocks and the focus score.",
+  shallow: "Work that is not focus, such as email, planning or looking things up.",
+  browse: "Search, feeds and shopping: a third of it weighs on the score like a distraction, but it is never nudged or blocked.",
+  neutral: "Neither work nor distraction, such as utilities or reading for pleasure.",
+  distract: "Entertainment: every 4 minutes cost the score a point, and focus sessions nudge or block it.",
+  "": "Time no rule or label has sorted yet. Label it in the Inbox.",
+};
+
+/** kindHelp is a kind's one-line definition; an unknown kind is neutral. */
+export function kindHelp(k: string): string {
+  return HELP[k === "" ? "" : isKind(k) ? k : "neutral"];
+}
+
 export function isKind(k: string): k is Kind {
   return (KINDS as readonly string[]).includes(k);
 }

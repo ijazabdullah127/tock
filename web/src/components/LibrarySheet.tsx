@@ -4,7 +4,7 @@ import { go } from "@/lib/route";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { post, type LibCategory, type LibChange, type LibGoal, type LibProject, type Library } from "@/lib/api";
-import { KINDS, kindLabel } from "@/lib/kinds";
+import { KINDS, kindHelp, kindLabel } from "@/lib/kinds";
 import { undoToast } from "@/components/LabelSheet";
 
 export type Edit =
@@ -118,6 +118,7 @@ export function LibrarySheet({ edit, lib, onClose, onDone }: { edit: Edit | null
                 <select className={field} value={s("kind")} onChange={(e) => set("kind", e.target.value)}>
                   {KINDS.map((k) => <option key={k} value={k}>{kindLabel(k)}</option>)}
                 </select>
+                <span className="block text-xs text-muted-foreground">{kindHelp(s("kind") || "neutral")}</span>
               </Row>
               <Row label="Away after (minutes, empty = default)"><input className={field} inputMode="numeric" value={s("afk")} onChange={(e) => set("afk", e.target.value)} /></Row>
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={b("interrupt")} onChange={(e) => set("interrupt", e.target.checked)} /> Can interrupt a session</label>

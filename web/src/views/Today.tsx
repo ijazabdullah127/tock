@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Explain, Sum, Why } from "@/components/Explain";
 import { scoreParts, STATS } from "@/lib/explain";
+import { KindsHelp } from "@/components/KindsHelp";
 import { Change, Empty, Panel } from "@/components/Panel";
 import { Donut } from "@/components/charts/Donut";
 import { GoalRings } from "@/components/charts/GoalRings";
@@ -22,7 +23,7 @@ import { useApi, type Day } from "@/lib/api";
 import { addDays, delta, dur, hhmm, parseDate } from "@/lib/format";
 import { go } from "@/lib/route";
 import { fit, type Win } from "@/lib/zoom";
-import { byKindRows, kindColor, kindLabel } from "@/lib/kinds";
+import { byKindRows, kindColor, kindHelp, kindLabel } from "@/lib/kinds";
 import { onDay } from "@/lib/outage";
 import { useGroups } from "@/lib/groups";
 import { cn } from "@/lib/utils";
@@ -68,7 +69,7 @@ export default function Today({ date, tick }: { date: string; tick: number }) {
     setTarget({ title: "Add time", sub: "Time tock didn't see: a meeting, a call, paper.", range: { date: d.date, from, to, mode: "add" } });
   };
   const kindRows = byKindRows(d.byKind);
-  const kinds = kindRows.map((k) => ({ name: kindLabel(k.kind), ms: k.ms, color: kindColor(k.kind) }));
+  const kinds = kindRows.map((k) => ({ name: kindLabel(k.kind), ms: k.ms, color: kindColor(k.kind), kind: k.kind, hint: kindHelp(k.kind) }));
   const zoom = win?.date === d.date ? win.w : null;
   const highlight = hl?.date === d.date ? hl.h : null;
   const bounds = { from: day0 + d.hourFirst * 3_600_000, to: day0 + (d.hourLast + 1) * 3_600_000 };
@@ -119,7 +120,7 @@ export default function Today({ date, tick }: { date: string; tick: number }) {
             <FocusPanel />
           </Panel>
         ) : (
-        <Panel className="anim-rise [animation-delay:120ms] lg:col-span-2 xl:col-span-1" label="Kinds of time">
+        <Panel className="anim-rise [animation-delay:120ms] lg:col-span-2 xl:col-span-1" label="Kinds of time" aside={<KindsHelp />}>
           {kinds.length ? (
             <Donut data={kinds} center={dur(kinds.reduce((s, k) => s + k.ms, 0))} sub="tracked" active={highlight?.kind !== undefined ? highlight.label : null}
               onSelect={(name) => { const k = kindRows.find((x) => kindLabel(x.kind) === name); if (k) pickOut({ kind: k.kind, label: name }); }} />
@@ -180,7 +181,7 @@ export default function Today({ date, tick }: { date: string; tick: number }) {
         </Panel>
 
         {d.today && focus && (
-        <Panel label="Kinds of time">
+        <Panel label="Kinds of time" aside={<KindsHelp />}>
           {kinds.length ? (
             <Donut data={kinds} center={dur(kinds.reduce((s, k) => s + k.ms, 0))} sub="tracked" active={highlight?.kind !== undefined ? highlight.label : null}
               onSelect={(name) => { const k = kindRows.find((x) => kindLabel(x.kind) === name); if (k) pickOut({ kind: k.kind, label: name }); }} />

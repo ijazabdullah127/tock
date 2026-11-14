@@ -10,7 +10,8 @@ import { LibrarySheet, type Edit } from "@/components/LibrarySheet";
 import { RuleSheet } from "@/components/RuleSheet";
 import { post, useApi, type LibChange, type LibDup, type Library as Lib, type Rule, type Rules as RuleList } from "@/lib/api";
 import { clock } from "@/lib/format";
-import { kindColor, kindLabel } from "@/lib/kinds";
+import { kindColor, kindHelp, kindLabel } from "@/lib/kinds";
+import { KindsHelp } from "@/components/KindsHelp";
 import { goalTarget, isStale, matches, rateText, seenText } from "@/lib/library";
 import { labelOf, parts, ruleText, statusText } from "@/lib/rules";
 import { go, LIB_SECTIONS, type LibSection } from "@/lib/route";
@@ -184,7 +185,7 @@ function Categories({ lib, now, q, staleOnly, onEdit }: { lib: Lib; now: number;
     <Table>
       <TableHeader>
         <TableRow className="hover:bg-transparent">
-          <TableHead className={head}>Category</TableHead><TableHead className={head}>Kind</TableHead>
+          <TableHead className={head}>Category</TableHead><TableHead className={head}><KindsHelp label="Kind" /></TableHead>
           <TableHead className={cn(head, "text-right")}>Away after</TableHead><TableHead className={cn(head, "text-right")}>Projects</TableHead>
           <TableHead className={cn(head, "text-right")}>30 days</TableHead><TableHead className={cn(head, "text-right")}>Last seen</TableHead>
         </TableRow>
@@ -196,7 +197,7 @@ function Categories({ lib, now, q, staleOnly, onEdit }: { lib: Lib; now: number;
               <i className="mr-2 inline-block h-2 w-2 rounded-sm align-[1px]" style={{ background: kindColor(c.kind) }} />{c.name}
               {!c.interrupt && <span className="ml-2 text-muted-foreground">never interrupts</span>}
             </TableCell>
-            <TableCell className={cn(cell, "w-28")}>{kindLabel(c.kind)}</TableCell>
+            <TableCell className={cn(cell, "w-28")} title={kindHelp(c.kind)}>{kindLabel(c.kind)}</TableCell>
             <TableCell className={cn(cell, "num w-24 text-right")}>{c.afkMS ? `${c.afkMS / 60_000} min` : "default"}</TableCell>
             <TableCell className={cn(cell, "num w-20 text-right")}>{c.projects || ""}</TableCell>
             <TableCell className={cn(cell, "num w-20 text-right")}>{clock(c.last30MS)}</TableCell>
