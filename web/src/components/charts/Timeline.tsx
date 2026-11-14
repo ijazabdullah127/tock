@@ -7,6 +7,7 @@ import { snapAt } from "@/lib/range";
 import { onDay } from "@/lib/outage";
 import { clampWin, fit, isFull, pan, ticks, zoomAt, type Win } from "@/lib/zoom";
 import { cn } from "@/lib/utils";
+import { labelWidth } from "@/lib/lanes";
 
 type Lane = { name: string; kind: string; ms: number; rows: Row[]; away?: boolean };
 
@@ -21,7 +22,10 @@ export function matchesHighlight(r: Row, h: Highlight | null): boolean {
   return true;
 }
 
-const LABEL_W = "9rem"; // lane names, and the left edge of every overlay
+// The lane names' column, and the left edge of every overlay: as wide as
+// the longest name needs (see labelWidth), set on the chart as --lw.
+const LABEL_W = "var(--lw)";
+const NAME_W = `calc(${LABEL_W} - 0.75rem)`; // less the gap before the track
 
 /** Timeline: one lane per category on a shared time axis, Away hatched,
  *  a line for now, and last a "Not recording" lane, outlined, for the time
@@ -162,7 +166,8 @@ export function Timeline({ rows, outages, date, first, last, today, onPick, onRa
   };
 
   return (
-    <div ref={box} className="relative" onMouseLeave={() => setHover(null)}>
+    <div ref={box} className="relative" onMouseLeave={() => setHover(null)}
+      style={{ "--lw": labelWidth([...lanes.map((l) => l.name), ...(gaps.items.length ? ["Not recording"] : [])]) } as React.CSSProperties}>
       <div className="mb-2 flex items-center justify-between gap-3">
         <div className="num text-xs text-muted-foreground" aria-live="polite">
           {full ? "Whole day" : `${hhmm(w.from)}–${hhmm(w.to)} · ${dur(w.to - w.from)}`}
@@ -173,7 +178,7 @@ export function Timeline({ rows, outages, date, first, last, today, onPick, onRa
           <ZoomButton label="Show the whole day (0)" disabled={full} onClick={() => onWin(null)}><Maximize2 /></ZoomButton>
         </div>
       </div>
-      <div className="relative ml-36 h-4 text-[11px] text-faint">
+      <div className="relative h-4 text-[11px] text-faint" style={{ marginLeft: LABEL_W }} aria-hidden>
         {marks.map((t) => (
           <span key={t} className="num absolute -translate-x-1/2" style={{ left: `${x(t)}%` }}>{tickText(t)}</span>
         ))}
@@ -193,10 +198,10 @@ export function Timeline({ rows, outages, date, first, last, today, onPick, onRa
             <button
               type="button"
               className="flex shrink-0 items-center justify-between gap-2 rounded-sm pr-1 text-left hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
-              style={{ width: "8.25rem" }}
+              style={{ width: NAME_W }}
               onClick={() => laneFit(l)}
               onDoubleClick={(e) => e.stopPropagation()}
-              title={`Zoom to ${l.name}`}
+              title={`${l.name}: ${dur(l.ms)}. Click to zoom to it.`}
             >
               <span className="truncate">{l.name}</span>
               <span className="num text-xs text-muted-foreground">{dur(l.ms)}</span>
@@ -235,7 +240,7 @@ export function Timeline({ rows, outages, date, first, last, today, onPick, onRa
         ))}
         {gaps.items.length > 0 && (
           <div className="flex items-center gap-3">
-            <div className="flex shrink-0 items-center justify-between gap-2 pr-1 text-muted-foreground" style={{ width: "8.25rem" }}>
+            <div className="flex shrink-0 items-center justify-between gap-2 pr-1 text-muted-foreground" style={{ width: NAME_W }} title={`Not recording: ${dur(gaps.ms)}`}>
               <span className="truncate">Not recording</span>
               <span className="num text-xs">{dur(gaps.ms)}</span>
             </div>
@@ -370,7 +375,7 @@ function Overview({ rows, bounds, w, full, setW }: { rows: Row[]; bounds: Win; w
 
   return (
     <div className="mt-3 flex items-center gap-3">
-      <span className="w-[8.25rem] shrink-0 text-[11px] text-faint">{full ? "Drag to zoom" : "Drag to move"}</span>
+      <span className="shrink-0 text-[11px] text-faint" style={{ width: NAME_W }}>{full ? "Drag to zoom" : "Drag to move"}</span>
       <div
         ref={ref}
         className="relative h-3 flex-1 cursor-pointer touch-none select-none rounded-sm bg-secondary/40"
