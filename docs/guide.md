@@ -130,6 +130,9 @@ select text anyway.
 
 ## Commands
 
+`tock help` shows the ones most days need; `tock help all` lists them all,
+as below, and `tock <command> --help` shows one.
+
 ```
 Every day:
 tock                                   open the TUI (today, week, inbox, focus, rules, plan)
