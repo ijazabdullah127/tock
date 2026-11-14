@@ -6,11 +6,12 @@
 # is the macOS footprint (what Activity Monitor shows), sampled at the
 # start and the end; RSS overstates it because it counts shared pages.
 # Leave the Mac as it normally is while it runs: the number is only as
-# typical as the window.
+# typical as the window. Elsewhere memory is RSS. TRACKD_PID picks the
+# process (CI runs its own trackd).
 
 set -eu
 mins=${1:-10}
-pid=$(pgrep -x trackd | head -n 1 || true)
+pid=${TRACKD_PID:-$(pgrep -x trackd | head -n 1 || true)}
 [ -n "$pid" ] || { echo "trackd is not running" >&2; exit 1; }
 
 # cputime as seconds, from ps's [[dd-]hh:]mm:ss.cc
@@ -34,11 +35,13 @@ footprint_mb() {
 }
 
 c0=$(cpu); m0=$(footprint_mb); t0=$(date +%s)
-echo "trackd pid $pid: measuring for $mins min (footprint now ${m0} MB)"
+mem=footprint
+command -v footprint >/dev/null 2>&1 || mem=rss
+echo "trackd pid $pid: measuring for $mins min ($mem now ${m0} MB)"
 sleep $((mins * 60))
 c1=$(cpu); m1=$(footprint_mb); t1=$(date +%s)
 kill -0 "$pid" 2>/dev/null || { echo "trackd restarted during the window" >&2; exit 1; }
 
-awk -v c0="$c0" -v c1="$c1" -v t0="$t0" -v t1="$t1" -v m0="$m0" -v m1="$m1" 'BEGIN {
+awk -v mem="$mem" -v c0="$c0" -v c1="$c1" -v t0="$t0" -v t1="$t1" -v m0="$m0" -v m1="$m1" 'BEGIN {
 	printf "cpu        %.2f %% (%.2f s over %d s)\n", (c1 - c0) * 100 / (t1 - t0), c1 - c0, t1 - t0
-	printf "footprint  %s MB at start, %s MB at end\n", m0, m1 }'
+	printf "%-10s %s MB at start, %s MB at end\n", mem, m0, m1 }'

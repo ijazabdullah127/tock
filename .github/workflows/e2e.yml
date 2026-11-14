@@ -67,3 +67,23 @@ jobs:
         env:
           E2E_IDLE: "1"
         run: scripts/e2e/macos.sh
+
+  # trackd's idle CPU and memory over a fixed window on a fresh install.
+  perf:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+      - name: install the desktop
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb openbox xterm
+      - name: idle cpu and memory
+        env:
+          PERF_MEM_MAX_MB: "200"
+        run: scripts/e2e/perf.sh
