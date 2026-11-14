@@ -176,7 +176,7 @@ func TestTrendsHours(t *testing.T) {
 // TestHelpTrendsAndRecommend: the usage text names --hours and tock recommend.
 func TestHelpTrendsAndRecommend(t *testing.T) {
 	te := newTestEnv(t, testRules)
-	_, out := te.run(t, "", "help")
+	_, out := te.run(t, "", "help", "all")
 	all := out + te.errb.String()
 	for _, want := range []string{"tock trends [--month YYYY-MM] [--hours]", "tock recommend [accept | dismiss]"} {
 		if !strings.Contains(all, want) {
