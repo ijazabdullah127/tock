@@ -12,4 +12,4 @@ nudge=${RUNNER_TEMP:-${TMPDIR:-/tmp}}/tock-nudge
 swiftc -O -o "$nudge" scripts/e2e/nudge.swift
 export E2E_TITLES=TextEdit,Calculator
 export E2E_FOCUS="open -a \"{title}\" && $nudge"
-go test -tags e2e ./e2e -v -count=1
+go test -tags e2e ./e2e -v -count=1 -timeout 25m

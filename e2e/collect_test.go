@@ -17,7 +17,6 @@ import (
 	"bufio"
 	"bytes"
 	"database/sql"
-	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -36,6 +35,7 @@ type row struct {
 	End       string `json:"end"`
 	DurationS int64  `json:"duration_s"`
 	App       string `json:"app"`
+	BundleID  string `json:"bundle_id"`
 	Title     string `json:"title"`
 }
 
@@ -133,33 +133,7 @@ func TestCollectKillRecover(t *testing.T) {
 	if os.Getenv("E2E_FOCUS") == "" || len(titles) < 2 {
 		t.Skip("set E2E_TITLES (two or more) and E2E_FOCUS; see the package comment")
 	}
-	bin := t.TempDir()
-	trackd := build(t, bin, "./cmd/trackd")
-	tock := build(t, bin, "./cmd/tock")
-
-	root := t.TempDir()
-	dirs := map[string]string{
-		"TOCK_DATA_DIR":   filepath.Join(root, "data"),
-		"TOCK_CONFIG_DIR": filepath.Join(root, "config"),
-		"TOCK_STATE_DIR":  filepath.Join(root, "state"),
-	}
-	env := os.Environ()
-	for k, v := range dirs {
-		if err := os.MkdirAll(v, 0o700); err != nil {
-			t.Fatal(err)
-		}
-		env = append(env, k+"="+v)
-	}
-	if d := os.Getenv("E2E_DESKTOP"); d != "" {
-		env = append(env, "TOCK_DESKTOP="+d)
-	}
-
-	// A fresh install: the starter rules, as a new user gets them.
-	initCmd := exec.Command(tock, "init")
-	initCmd.Env = env
-	if out, err := initCmd.CombinedOutput(); err != nil {
-		t.Fatalf("tock init: %v\n%s", err, out)
-	}
+	trackd, tock, env, dirs := setup(t)
 
 	// Run 1: record, then die mid-span.
 	d1 := start(t, trackd, env)
@@ -182,18 +156,7 @@ func TestCollectKillRecover(t *testing.T) {
 	t.Logf("run 2 log:\n%s", d2.log.String())
 
 	// What a user sees.
-	today := time.Now().Format("2006-01-02")
-	cmd := exec.Command(tock, "export", "--format", "json", "--from", today, "--to", today)
-	cmd.Env = env
-	var out, errb bytes.Buffer
-	cmd.Stdout, cmd.Stderr = &out, &errb
-	if err := cmd.Run(); err != nil {
-		t.Fatalf("tock export: %v\n%s", err, errb.String())
-	}
-	var rows []row
-	if err := json.Unmarshal(out.Bytes(), &rows); err != nil {
-		t.Fatalf("export json: %v\n%s", err, out.String())
-	}
+	rows := export(t, tock, env)
 	var total int64
 	seen := map[string]int64{}
 	for _, r := range rows {
@@ -226,6 +189,40 @@ func TestCollectKillRecover(t *testing.T) {
 	if err := db.QueryRow("PRAGMA integrity_check").Scan(&ok); err != nil || ok != "ok" {
 		t.Errorf("integrity_check = %q, %v", ok, err)
 	}
+}
+
+// setup builds trackd and tock and makes a fresh install in temp dirs: the
+// environment both run with, and the dirs by variable.
+func setup(t *testing.T) (trackd, tock string, env []string, dirs map[string]string) {
+	t.Helper()
+	bin := t.TempDir()
+	trackd = build(t, bin, "./cmd/trackd")
+	tock = build(t, bin, "./cmd/tock")
+
+	root := t.TempDir()
+	dirs = map[string]string{
+		"TOCK_DATA_DIR":   filepath.Join(root, "data"),
+		"TOCK_CONFIG_DIR": filepath.Join(root, "config"),
+		"TOCK_STATE_DIR":  filepath.Join(root, "state"),
+	}
+	env = os.Environ()
+	for k, v := range dirs {
+		if err := os.MkdirAll(v, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		env = append(env, k+"="+v)
+	}
+	if d := os.Getenv("E2E_DESKTOP"); d != "" {
+		env = append(env, "TOCK_DESKTOP="+d)
+	}
+
+	// A fresh install: the starter rules, as a new user gets them.
+	initCmd := exec.Command(tock, "init")
+	initCmd.Env = env
+	if out, err := initCmd.CombinedOutput(); err != nil {
+		t.Fatalf("tock init: %v\n%s", err, out)
+	}
+	return trackd, tock, env, dirs
 }
 
 func logRows(t *testing.T, rows []row) {

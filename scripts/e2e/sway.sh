@@ -18,11 +18,11 @@ for _ in 1 2 3 4 5 6 7 8 9 10; do
 	swaymsg -t get_version >/dev/null 2>&1 && break
 	sleep 1
 done
-swaymsg -q exec 'foot -T tock-e2e-alpha sleep 600'
-swaymsg -q exec 'foot -T tock-e2e-beta sleep 600'
+swaymsg -q exec 'foot -T tock-e2e-alpha sleep 1800'
+swaymsg -q exec 'foot -T tock-e2e-beta sleep 1800'
 sleep 3
 swaymsg -t get_tree | grep -c tock-e2e || true
 export E2E_TITLES=tock-e2e-alpha,tock-e2e-beta
 export E2E_FOCUS='swaymsg -q "[title=\"^{title}$\"] focus"'
 export E2E_DESKTOP=sway
-go test -tags e2e ./e2e -v -count=1
+go test -tags e2e ./e2e -v -count=1 -timeout 25m
