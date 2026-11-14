@@ -56,10 +56,19 @@ func TestAccuracy(t *testing.T) {
 	time.Sleep(4 * time.Second) // open the store, first poll
 
 	var segs []segment
+	// hold fronts title for dur. At a window someone gives input now and
+	// then: the focus command does (E2E_FOCUS ends with an input), every 4 s.
+	// tock ends idle only on a second input 1 to 30 s after the first, so
+	// one input alone would not count as coming back. Idle gives none.
 	hold := func(label, title string, dur time.Duration) {
 		focus(t, title)
-		segs = append(segs, segment{label: label, start: time.Now()})
-		time.Sleep(dur)
+		s := time.Now()
+		segs = append(segs, segment{label: label, start: s})
+		for label != "idle" && time.Since(s)+4*time.Second < dur {
+			time.Sleep(4 * time.Second)
+			focus(t, title)
+		}
+		time.Sleep(dur - time.Since(s))
 	}
 	plan := []struct {
 		title string
