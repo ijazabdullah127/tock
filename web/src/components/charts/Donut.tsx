@@ -1,6 +1,7 @@
 import { Cell, Pie, PieChart } from "recharts";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { dur, pct } from "@/lib/format";
+import { kindClass, kindFill } from "@/lib/kinds";
 
 export type Slice = { name: string; ms: number; color: string; hint?: string; kind?: string };
 
@@ -29,7 +30,7 @@ export function Donut({ data, center, sub, onSelect, active }: { data: Slice[]; 
             />
             <Pie data={data} dataKey="ms" nameKey="name" innerRadius="66%" outerRadius="100%" paddingAngle={data.length > 1 ? 1.5 : 0} strokeWidth={0} isAnimationActive={false} rootTabIndex={-1}>
               {data.map((d) => (
-                <Cell key={d.name} fill={d.color} opacity={active && active !== d.name ? 0.25 : 1} className={onSelect ? "cursor-pointer outline-none" : undefined} onClick={() => onSelect?.(d.name)} />
+                <Cell key={d.name} fill={d.kind !== undefined ? kindFill(d.kind) : d.color} opacity={active && active !== d.name ? 0.25 : 1} className={onSelect ? "cursor-pointer outline-none" : undefined} onClick={() => onSelect?.(d.name)} />
               ))}
             </Pie>
           </PieChart>
@@ -43,7 +44,7 @@ export function Donut({ data, center, sub, onSelect, active }: { data: Slice[]; 
         {data.map((d) => {
           const inner = (
             <>
-              <i className="h-2 w-2 shrink-0 rounded-sm" style={{ background: d.color }} />
+              <i className={`h-2 w-2 shrink-0 rounded-sm ${d.kind ? kindClass(d.kind) ?? "" : ""}`} style={{ backgroundColor: d.color }} aria-hidden />
               <span className="min-w-0 flex-1 truncate text-left">{d.name}</span>
               <span className="num whitespace-nowrap">{dur(d.ms)}</span>
               <span className="num w-11 whitespace-nowrap text-right text-muted-foreground">{pct(d.ms, total)}</span>

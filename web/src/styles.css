@@ -79,6 +79,10 @@
   .lbl { @apply text-[11px] font-medium uppercase tracking-[0.06em] text-faint; }
   .hatch { background: repeating-linear-gradient(135deg, hsl(var(--hatch-a)) 0 4px, hsl(var(--hatch-b)) 4px 8px); }
   .num { font-variant-numeric: tabular-nums; }
+  /* Kind textures over a kind's colour, so charts read without colour
+     (lib/kinds.ts PATTERNED; KindPatterns draws the same for SVG). */
+  .k-pat-distract { background-image: repeating-linear-gradient(45deg, hsl(var(--background) / 0.55) 0 1.5px, transparent 1.5px 5px); }
+  .k-pat-browse { background-image: radial-gradient(hsl(var(--background) / 0.6) 1px, transparent 1.3px); background-size: 4px 4px; }
   /* The first cards of a page rise in once, on load. */
   .anim-rise { animation: tock-rise 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   @keyframes tock-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

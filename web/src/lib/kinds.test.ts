@@ -1,11 +1,19 @@
 import { test, expect } from "vitest";
-import { kindColor, kindLabel, byKindRows, kindHelp, KINDS } from "./kinds";
+import { kindColor, kindLabel, byKindRows, kindHelp, KINDS, kindFill, kindClass } from "./kinds";
 
 test("every kind, and unlabelled time, has a one-line definition", () => {
   for (const k of [...KINDS, ""]) expect(kindHelp(k)).toMatch(/^[A-Z].+\.$/);
   expect(kindHelp("deep")).toContain("focus");
   expect(kindHelp("distract")).toContain("score");
   expect(kindHelp("weird")).toBe(kindHelp("neutral"));
+});
+
+test("distracting and browsing time carry a pattern, not only a colour", () => {
+  expect(kindFill("distract")).toBe("url(#k-pat-distract)");
+  expect(kindFill("browse")).toBe("url(#k-pat-browse)");
+  expect(kindFill("deep")).toBe(kindColor("deep"));
+  expect(kindClass("distract")).toBe("k-pat-distract");
+  expect(kindClass("deep")).toBeUndefined();
 });
 
 test("unknown kinds fall back to neutral", () => {

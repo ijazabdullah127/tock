@@ -28,6 +28,7 @@ export function GoalRings({ goals }: { goals: Goal[] }) {
             </div>
             <div className="num pl-4 text-xs text-muted-foreground">
               {g.days ? `held ${g.held ?? 0} of ${g.days} days` : `${dur(g.doneMS)} of ${g.atMost ? "at most " : ""}${dur(g.ms)}`}
+              {g.state === "over" ? " · over the limit" : g.state === "met" ? " · reached" : ""}
               {g.streak > 1 && ` · ${g.streak}-day streak`}
             </div>
           </li>

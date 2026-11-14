@@ -18,6 +18,7 @@ import Inbox from "@/views/Inbox";
 import Settings from "@/views/Settings";
 import Palette, { openPalette } from "@/components/Palette";
 import { DateControl } from "@/components/DateControl";
+import { KindPatterns } from "@/components/charts/KindPatterns";
 import { openShortcuts, Shortcuts } from "@/components/Shortcuts";
 import { FocusDock, focusField } from "@/components/FocusControl";
 
@@ -136,6 +137,7 @@ export default function App() {
           </main>
         </div>
       </div>
+      <KindPatterns />
       <Palette />
       <Shortcuts />
       <Toaster position="bottom-right" />

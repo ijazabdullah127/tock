@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Minus, Plus, Maximize2 } from "lucide-react";
 import type { Outage, Row } from "@/lib/api";
 import { dur, hhmm, parseDate } from "@/lib/format";
-import { kindColor, kindLabel } from "@/lib/kinds";
+import { kindClass, kindColor, kindLabel } from "@/lib/kinds";
 import { snapAt } from "@/lib/range";
 import { onDay } from "@/lib/outage";
 import { clampWin, fit, isFull, pan, ticks, zoomAt, type Win } from "@/lib/zoom";
@@ -218,15 +218,15 @@ export function Timeline({ rows, outages, date, first, last, today, onPick, onRa
                     key={r.start + r.key}
                     className={cn(
                       "absolute inset-y-0 rounded-[2px] transition-opacity hover:brightness-125 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring",
-                      l.away && "hatch",
+                      l.away ? "hatch" : kindClass(r.kind),
                       dim && "opacity-20",
                     )}
-                    style={{ left: `${left}%`, width: `${wd}%`, background: l.away ? undefined : kindColor(r.kind) }}
+                    style={{ left: `${left}%`, width: `${wd}%`, backgroundColor: l.away ? undefined : kindColor(r.kind) }}
                     onMouseEnter={() => setHover({ r, left: left + wd / 2, lane: i })}
                     onFocus={() => setHover({ r, left: left + wd / 2, lane: i })}
                     onBlur={() => setHover(null)}
                     onClick={() => onPick?.(r)}
-                    aria-label={`${r.app || "Away"} ${hhmm(r.start)} to ${hhmm(r.end)}${r.invoice ? `, on invoice ${r.invoice}` : ""}`}
+                    aria-label={`${r.app || "Away"} ${hhmm(r.start)} to ${hhmm(r.end)}${r.idle ? "" : `, ${r.category || "Unlabelled"}, ${kindLabel(r.kind)}`}${r.invoice ? `, on invoice ${r.invoice}` : ""}`}
                   >
                     {r.invoice && <i className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-foreground/80" />}
                     {wd > 9 && !l.away && (
@@ -388,7 +388,7 @@ function Overview({ rows, bounds, w, full, setW }: { rows: Row[]; bounds: Win; w
         aria-valuetext={full ? "whole day" : `${hhmm(w.from)} to ${hhmm(w.to)}`}
       >
         {rows.filter((r) => !r.idle).map((r) => (
-          <i key={r.start + r.key} className="pointer-events-none absolute inset-y-[3px] rounded-[1px]" style={{ left: `${x(r.start)}%`, width: `${Math.max(0.1, x(r.end) - x(r.start))}%`, background: kindColor(r.kind) }} />
+          <i key={r.start + r.key} className={cn("pointer-events-none absolute inset-y-[3px] rounded-[1px]", kindClass(r.kind))} style={{ left: `${x(r.start)}%`, width: `${Math.max(0.1, x(r.end) - x(r.start))}%`, backgroundColor: kindColor(r.kind) }} />
         ))}
         {!full && (
           <>

@@ -1,7 +1,8 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { SERIES, kindColor, kindLabel } from "@/lib/kinds";
+import { SERIES, kindColor, kindFill, kindLabel } from "@/lib/kinds";
 import { dur } from "@/lib/format";
+import { KindTable } from "./KindTable";
 
 /** HourBars: minutes per hour, stacked by kind, from hourFirst to hourLast. */
 /** onHour gets the hour of a clicked bar. */
@@ -13,7 +14,8 @@ export function HourBars({ hours, first, last, height = 220, onHour }: { hours: 
     rows.push(r);
   }
   return (
-    <ChartContainer config={{}} className="w-full" style={{ height }}>
+    <>
+    <ChartContainer config={{}} className="w-full" style={{ height }} aria-hidden>
       <BarChart data={rows} margin={{ top: 4, right: 0, left: -24, bottom: 0 }} className={onHour ? "cursor-pointer" : undefined}
         onClick={(e) => e?.activeLabel !== undefined && onHour?.(Number(e.activeLabel))}>
         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -38,9 +40,11 @@ export function HourBars({ hours, first, last, height = 220, onHour }: { hours: 
           }
         />
         {SERIES.map((k, i) => (
-          <Bar key={k || "unlabelled"} dataKey={k || "unlabelled"} stackId="a" fill={kindColor(k)} radius={i === SERIES.length - 1 ? [2, 2, 0, 0] : 0} isAnimationActive={false} />
+          <Bar key={k || "unlabelled"} dataKey={k || "unlabelled"} stackId="a" fill={kindFill(k)} radius={i === SERIES.length - 1 ? [2, 2, 0, 0] : 0} isAnimationActive={false} />
         ))}
       </BarChart>
     </ChartContainer>
+    <KindTable caption="Minutes per hour, by kind of time" rows={rows.map((r) => ({ label: `${r.h}:00`, byKind: Object.fromEntries(SERIES.map((k) => [k, Number(r[k || "unlabelled"]) * 60_000])) }))} />
+    </>
   );
 }

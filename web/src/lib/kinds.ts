@@ -36,6 +36,22 @@ export function kindColor(k: string): string {
   return `hsl(var(--k-${isKind(k) ? k : "neutral"}))`;
 }
 
+/** PATTERNED kinds carry a texture as well as a colour, so they read without
+ *  colour: Distracting is striped, Browsing dotted (Away is hatched). */
+export const PATTERNED: Record<string, string> = { distract: "k-pat-distract", browse: "k-pat-browse" };
+
+/** kindFill is an SVG fill or stroke for a kind: its pattern (defined once
+ *  by KindPatterns) or its colour. */
+export function kindFill(k: string): string {
+  return PATTERNED[k] ? `url(#${PATTERNED[k]})` : kindColor(k);
+}
+
+/** kindClass is the CSS class that lays a kind's texture over an HTML
+ *  element whose background is the kind's colour. */
+export function kindClass(k: string): string | undefined {
+  return PATTERNED[k];
+}
+
 export function kindLabel(k: string): string {
   return isKind(k) ? LABELS[k] : "Unlabelled";
 }

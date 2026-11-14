@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { Day } from "@/lib/api";
 import { arcPath, arcs, hourAt, point } from "@/lib/dial";
 import { dur, hhmm, parseDate } from "@/lib/format";
-import { kindColor } from "@/lib/kinds";
+import { kindFill } from "@/lib/kinds";
 import { useNow } from "@/lib/live";
 import { SERIES } from "@/lib/kinds";
 
@@ -52,7 +52,7 @@ export function DayDial({ d, onHour }: { d: Day; onHour: (h: number) => void }) 
         )}
         {as.map((a, i) => (
           <path key={i} d={arcPath(C, R, a.from, Math.min(0.9999, Math.max(a.to + 0.0008, a.from + 0.0015)))} fill="none" strokeWidth={W}
-            stroke={a.idle ? "url(#dial-hatch)" : kindColor(a.kind)} />
+            stroke={a.idle ? "url(#dial-hatch)" : kindFill(a.kind)} />
         ))}
         {Array.from({ length: 24 }, (_, h) => {
           const [x0, y0] = point(C, R - W / 2 - 3, h / 24), [x1, y1] = point(C, R - W / 2 - (h % 6 ? 6 : 9), h / 24);

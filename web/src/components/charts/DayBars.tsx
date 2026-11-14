@@ -1,7 +1,8 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { SERIES, kindColor, kindLabel } from "@/lib/kinds";
+import { SERIES, kindColor, kindFill, kindLabel } from "@/lib/kinds";
 import { dur } from "@/lib/format";
+import { KindTable } from "./KindTable";
 
 export type DayPoint = { label: string; byKind: Record<string, number>; faint?: boolean };
 
@@ -14,7 +15,8 @@ export function DayBars({ days, height = 240, onDay }: { days: DayPoint[]; heigh
     return r;
   });
   return (
-    <ChartContainer config={{}} className="w-full" style={{ height }}>
+    <>
+    <ChartContainer config={{}} className="w-full" style={{ height }} aria-hidden>
       <BarChart data={rows} margin={{ top: 4, right: 0, left: -24, bottom: 0 }} className={onDay ? "cursor-pointer" : undefined}
         onClick={(e) => e?.activeTooltipIndex !== undefined && onDay?.(e.activeTooltipIndex)}>
         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -39,9 +41,11 @@ export function DayBars({ days, height = 240, onDay }: { days: DayPoint[]; heigh
           }
         />
         {SERIES.map((k, i) => (
-          <Bar key={k || "unlabelled"} dataKey={k || "unlabelled"} stackId="a" fill={kindColor(k)} radius={i === SERIES.length - 1 ? [2, 2, 0, 0] : 0} isAnimationActive={false} />
+          <Bar key={k || "unlabelled"} dataKey={k || "unlabelled"} stackId="a" fill={kindFill(k)} radius={i === SERIES.length - 1 ? [2, 2, 0, 0] : 0} isAnimationActive={false} />
         ))}
       </BarChart>
     </ChartContainer>
+    <KindTable caption="Hours per day, by kind of time" rows={days.map((d) => ({ label: d.label, byKind: d.byKind }))} />
+    </>
   );
 }
