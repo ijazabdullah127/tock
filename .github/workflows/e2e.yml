@@ -1,7 +1,9 @@
 name: e2e
 
 # The real collector on real desktops: trackd records two windows, is
-# killed with no warning, starts again and recovers. See e2e/.
+# killed with no warning, starts again and recovers; then a scripted
+# session with known true times is compared with what tock exported
+# (the "accuracy:" line in the log and the job summary). See e2e/.
 on:
   push:
     branches: ["**"]
@@ -31,10 +33,13 @@ jobs:
           sudo apt-get update -qq
           case "${{ matrix.desktop }}" in
             openbox) sudo apt-get install -y -qq xvfb openbox xterm xdotool ;;
-            i3) sudo apt-get install -y -qq xvfb i3-wm xterm ;;
+            i3) sudo apt-get install -y -qq xvfb i3-wm xterm xdotool ;;
             sway) sudo apt-get install -y -qq sway foot ;;
           esac
-      - name: record, kill, recover
+      - name: record, kill, recover; accuracy
+        env:
+          # a real 5.5 min idle stretch where X reports input idle
+          E2E_IDLE: ${{ matrix.desktop == 'openbox' && '1' || '' }}
         run: |
           case "${{ matrix.desktop }}" in
             sway) scripts/e2e/sway.sh ;;
@@ -58,5 +63,7 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version-file: go.mod
-      - name: record, kill, recover
+      - name: record, kill, recover; accuracy
+        env:
+          E2E_IDLE: "1"
         run: scripts/e2e/macos.sh
