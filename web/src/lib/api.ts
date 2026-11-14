@@ -95,6 +95,7 @@ export type ByKind = Record<string, number>;
 export type Score = {
   value: number; depth: number; blocks: number; calm: number; stretch: number;
   penalty: number; switchesPerHour: number; targetMS: number;
+  weights?: { depth: number; blocks: number; calm: number; stretch: number }; // config.toml [score]
 };
 export type Stats = {
   activeMS: number; deepMS: number; focusMS: number; longestMS: number;

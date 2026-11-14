@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Empty, Panel } from "@/components/Panel";
+import { Explain, Why } from "@/components/Explain";
 import { useApi, type Top as TopT, type TopRow } from "@/lib/api";
 import { clock, dur, pct } from "@/lib/format";
 import { kindColor } from "@/lib/kinds";
@@ -15,7 +16,11 @@ export default function Top({ tick }: { tick: number }) {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-xl font-semibold tracking-tight">Top {t && <span className="num ml-2 text-base font-normal text-muted-foreground">{dur(t.totalMS)}</span>}</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Top {t && (
+          <Explain title="Tracked in this range" className="num ml-2 text-base font-normal text-muted-foreground" label={dur(t.totalMS)}>
+            <Why>The time tock saw you at the computer from {t.from} to {t.to}, labelled or not. Each list ranks its rows by time; the shares are of this total.</Why>
+          </Explain>
+        )}</h1>
         <ToggleGroup type="single" value={range} onValueChange={(v) => v && setRange(v)} variant="outline" size="sm">
           <ToggleGroupItem value="today">Today</ToggleGroupItem>
           <ToggleGroupItem value="week">Week</ToggleGroupItem>

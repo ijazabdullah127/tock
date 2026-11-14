@@ -10,6 +10,8 @@ import { HeatGrid } from "@/components/charts/HeatGrid";
 import { Donut, ramp } from "@/components/charts/Donut";
 import { GoalRings } from "@/components/charts/GoalRings";
 import { TimeTable } from "@/components/Tables";
+import { Explain, Sum, Why } from "@/components/Explain";
+import { STATS } from "@/lib/explain";
 import { InvoiceDialog } from "@/components/InvoiceDialog";
 import { useApi, type Hours, type Week as WeekT } from "@/lib/api";
 import { dur, hhmm, parseDate, shortDay, dayTitle, addDays, isoDate } from "@/lib/format";
@@ -46,7 +48,10 @@ export default function Week({ date, tick }: { date: string; tick: number }) {
       <div className="flex items-baseline justify-between">
         <h1 className="text-xl font-semibold tracking-tight">{dayTitle(mon)} – {dayTitle(addDays(mon, 6))}</h1>
         <span className="flex items-center gap-3">
-          <span className="num text-muted-foreground">{dur(w.trackedMS)} tracked</span>
+          <Explain title="Tracked this week" align="end" className="text-muted-foreground" label={<span className="num">{dur(w.trackedMS)} tracked</span>}>
+            <Why>The time tock saw you at the computer each day, labelled or not. Away time is left out until you label it as work.</Why>
+            <Sum rows={w.days.filter((d) => !d.future).map((d) => [dayTitle(parseDate(d.date)), dur(d.trackedMS)])} total={["Week", dur(w.trackedMS)]} />
+          </Explain>
           <Export monday={w.monday} />
         </span>
       </div>
@@ -66,7 +71,12 @@ export default function Week({ date, tick }: { date: string; tick: number }) {
       </div>
       <div className={groups.focus ? "grid gap-5 lg:grid-cols-[1fr_1.4fr]" : "grid gap-5"}>
         {groups.focus && (
-          <Panel label="Focus score">
+          <Panel label="Focus score" aside={
+            <Explain title="Focus score per day" label="How it's scored" align="end">
+              <Why>Each day's score, 0–100: Focus time against your target, how much of it came in long blocks, few switches, less a point for every {STATS.penaltyPerMin} minutes of distraction. Open a day for its breakdown.</Why>
+              <Why>Days with less than an hour tracked have no point. The dashed line is the mean of the days shown.</Why>
+            </Explain>
+          }>
             <ScoreLine points={scores} onPoint={openDay} />
           </Panel>
         )}

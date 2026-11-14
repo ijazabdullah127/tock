@@ -6,6 +6,9 @@ import { CalendarHeat } from "@/components/charts/CalendarHeat";
 import { DeepArea } from "@/components/charts/DeepArea";
 import { ScoreLine } from "@/components/charts/ScoreLine";
 import { TimeTable } from "@/components/Tables";
+import { Explain, Sum, Why } from "@/components/Explain";
+import { STATS } from "@/lib/explain";
+import type { ReactNode } from "react";
 import { useApi, type Hours, type Month } from "@/lib/api";
 import { delta, dur, monthTitle, parseDate } from "@/lib/format";
 import { go } from "@/lib/route";
@@ -55,10 +58,17 @@ function MonthBody({ m }: { m: Month }) {
   return (
     <>
       <div className={cn("grid gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-2", focus ? "lg:grid-cols-4" : "lg:grid-cols-3")}>
-        <Card hasPrev={hasPrev} k="Tracked" v={dur(c.trackedMS)} d={c.trackedMS - p.trackedMS} t={delta(c.trackedMS - p.trackedMS)} />
-        <Card hasPrev={hasPrev} k="Focus" v={dur(c.focusMS)} d={c.focusMS - p.focusMS} t={delta(c.focusMS - p.focusMS)} />
-        {focus && <Card hasPrev={hasPrev} k="Average score" v={c.workdays ? c.avgScore.toFixed(0) : "–"} d={c.avgScore - p.avgScore} t={(c.avgScore - p.avgScore >= 0 ? "+" : "−") + Math.abs(c.avgScore - p.avgScore).toFixed(0)} />}
-        <Card hasPrev={hasPrev} k="Switches / hour" v={c.switchesPerHour.toFixed(1)} d={c.switchesPerHour - p.switchesPerHour} t={(c.switchesPerHour - p.switchesPerHour >= 0 ? "+" : "−") + Math.abs(c.switchesPerHour - p.switchesPerHour).toFixed(1)} lowerIsGood />
+        <Card hasPrev={hasPrev} k="Tracked" v={dur(c.trackedMS)} d={c.trackedMS - p.trackedMS} t={delta(c.trackedMS - p.trackedMS)}
+          help={<Why>All the time tock saw you at the computer this month, labelled or not, against the whole of last month. Away time is left out until you label it as work.</Why>} />
+        <Card hasPrev={hasPrev} k="Focus" v={dur(c.focusMS)} d={c.focusMS - p.focusMS} t={delta(c.focusMS - p.focusMS)}
+          help={<Why>Each day's Focus time added up: Deep time in runs that hold at least {STATS.blockMinMin}m of it, where a break under {STATS.toleranceS / 60}m does not end the run.</Why>} />
+        {focus && <Card hasPrev={hasPrev} k="Average score" v={c.workdays ? c.avgScore.toFixed(0) : "–"} d={c.avgScore - p.avgScore} t={(c.avgScore - p.avgScore >= 0 ? "+" : "−") + Math.abs(c.avgScore - p.avgScore).toFixed(0)}
+          help={<>
+            <Why>The mean focus score of this month's workdays: days with at least {STATS.workdayMinMin / 60}h of activity. Other days are left out.</Why>
+            <Sum rows={[["Workdays", String(c.workdays)], ["Last month", String(p.workdays)]]} />
+          </>} />}
+        <Card hasPrev={hasPrev} k="Switches / hour" v={c.switchesPerHour.toFixed(1)} d={c.switchesPerHour - p.switchesPerHour} t={(c.switchesPerHour - p.switchesPerHour >= 0 ? "+" : "−") + Math.abs(c.switchesPerHour - p.switchesPerHour).toFixed(1)} lowerIsGood
+          help={<Why>Every switch on a workday divided by the workdays' active hours. A switch is a move to another kind of time that lasts at least {STATS.switchMinS}s.</Why>} />
       </div>
       <div className="grid items-start gap-5 lg:grid-cols-[1fr_1.3fr]">
         <Panel label="Deep time by day" aside={`${c.workdays} workdays · click a day to open it`}>
@@ -82,10 +92,10 @@ function MonthBody({ m }: { m: Month }) {
   );
 }
 
-function Card({ k, v, d, t, lowerIsGood, hasPrev }: { k: string; v: string; d: number; t: string; lowerIsGood?: boolean; hasPrev: boolean }) {
+function Card({ k, v, d, t, lowerIsGood, hasPrev, help }: { k: string; v: string; d: number; t: string; lowerIsGood?: boolean; hasPrev: boolean; help: ReactNode }) {
   return (
     <div className="bg-card p-4">
-      <div className="lbl">{k}</div>
+      <h2 className="lbl"><Explain title={k} label={k}>{help}</Explain></h2>
       <div className="num mt-2 text-2xl font-semibold tracking-tight">{v}</div>
       <div className="mt-1 text-xs">
         {hasPrev ? (
