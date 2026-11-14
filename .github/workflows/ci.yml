@@ -101,6 +101,8 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - name: test and build the dashboard
         run: cd web && npm ci && npm test && npm run build
+      - name: no high or critical advisories in what the dashboard ships
+        run: cd web && npm audit --omit=dev --audit-level=high
       - name: the committed build is current
         run: git diff --exit-code --stat internal/web/static
 
