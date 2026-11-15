@@ -408,6 +408,7 @@ enabled = true           # the Billing group; false hides rates and stops tock i
 
 [display]
 week_start = "monday"    # or "sunday", "saturday": the first day of every week
+clock = "24h"            # or "12h": times of day as 5:20pm instead of 17:20
 
 [invoice]                # for tock invoice; all optional
 name = "Your Name"
@@ -1012,6 +1013,13 @@ goals and their streaks, focus sessions of the week, `tock ask` about
 this or last week, and the notch's week page. A week's plan is saved
 under its first day, so plans written before a change show up in the
 week that starts on that day only.
+
+Times of day show on the 24-hour clock. `clock = "12h"` under `[display]`
+shows them as `5:20pm` (hour marks as `5pm`) in the commands, the TUI, the
+dashboard, reports, notices, the menu bar and the notch. Times you type,
+such as the range for `tock edit` or `tock away`, can be in either form.
+Exports, `--json`, logs, file names and the summary sent to Claude stay
+24-hour.
 
 `tock top` ranks the last 7 days (or `--week`, `--month`, `--days N`):
 categories with their kind, apps and sites (URL hosts) with the category

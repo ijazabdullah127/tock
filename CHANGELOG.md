@@ -7,6 +7,9 @@ Versions follow [semantic versioning](docs/stability.md) from v1.0.0 on.
 ## v1.0.0 — unreleased
 
 ### Added
+- **A 12-hour clock.** `clock = "12h"` under `[display]` in config.toml
+  shows times of day as 5:20pm everywhere tock shows them to you. 24-hour
+  stays the default; exports and `--json` do not change.
 - **Weeks can start on Sunday or Saturday.** `week_start` under
   `[display]` in config.toml moves the first day of every week tock
   counts or draws. Monday stays the default.
