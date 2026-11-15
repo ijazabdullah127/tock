@@ -133,6 +133,7 @@ export type Status = {
   focus?: boolean; billing?: boolean;
   presets?: number[]; // session lengths in minutes, the default first
   weekStart?: string; // "monday", "sunday" or "saturday"
+  clock?: string; // "24h" or "12h"
 };
 export type WeekDay = { billedMS?: number; date: string; trackedMS: number; byKind: ByKind; future: boolean; score: number; deepMS: number };
 export type Week = {

@@ -5,7 +5,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { get, post, type Done, type Labels, type Propose, type WhyLine } from "@/lib/api";
-import { doneText, dur } from "@/lib/format";
+import { doneText, dur, is12h } from "@/lib/format";
 import { kindColor } from "@/lib/kinds";
 import { atClock, clockOf, rangeError } from "@/lib/range";
 
@@ -211,9 +211,9 @@ function Clock({ label, value, onChange }: { label: string; value: string; onCha
       <input
         className="num h-8 w-20 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         value={value}
-        inputMode="numeric"
-        maxLength={5}
-        placeholder="HH:MM"
+        inputMode={is12h() ? "text" : "numeric"}
+        maxLength={is12h() ? 7 : 5}
+        placeholder={is12h() ? "9:05am" : "HH:MM"}
         onChange={(e) => onChange(e.target.value)}
       />
     </label>

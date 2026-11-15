@@ -3,7 +3,7 @@ import { Film, Pause, Play, RotateCcw, X } from "lucide-react";
 import { Panel } from "@/components/Panel";
 import { Button } from "@/components/ui/button";
 import type { Row } from "@/lib/api";
-import { dur, hhmm } from "@/lib/format";
+import { dur, hhmm, is12h } from "@/lib/format";
 import { kindColor, kindLabel } from "@/lib/kinds";
 import { saveBlob } from "@/lib/download";
 import { frame, ordered } from "@/lib/replay";
@@ -188,7 +188,7 @@ export function Replay({ rows: raw, from, to, onClose }: { rows: Row[]; from: nu
               <ol className="mt-4 space-y-1 text-sm">
                 {f.trail.map((r, i) => (
                   <li key={r.ids[0] + ":" + r.start} className="flex items-center gap-2" style={{ opacity: 0.35 + (0.65 * (i + 1)) / f.trail.length }}>
-                    <span className="num w-11 shrink-0 text-faint">{hhmm(r.start)}</span>
+                    <span className={`num ${is12h() ? "w-14" : "w-11"} shrink-0 text-faint`}>{hhmm(r.start)}</span>
                     <span className="h-2 w-2 shrink-0 rounded-[2px]" style={{ background: kindColor(r.kind) }} />
                     <span className="truncate">{r.app}</span>
                     <span className="num ml-auto shrink-0 text-muted-foreground">{dur(r.end - r.start)}</span>

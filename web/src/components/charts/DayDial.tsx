@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Day } from "@/lib/api";
 import { arcPath, arcs, hourAt, point } from "@/lib/dial";
-import { dur, hhmm, parseDate } from "@/lib/format";
+import { dur, hhmm, hourLabel, minClock, parseDate } from "@/lib/format";
 import { kindFill } from "@/lib/kinds";
 import { useNow } from "@/lib/live";
 import { SERIES } from "@/lib/kinds";
@@ -60,7 +60,7 @@ export function DayDial({ d, onHour }: { d: Day; onHour: (h: number) => void }) 
         })}
         {[0, 6, 12, 18].map((h) => {
           const [x, y] = point(C, R - W / 2 - 19, h / 24);
-          return <text key={h} x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={10} fill="hsl(var(--faint-text))" className="num">{String(h).padStart(2, "0")}</text>;
+          return <text key={h} x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={10} fill="hsl(var(--faint-text))" className="num">{hourLabel(h)}</text>;
         })}
         {d.today && (
           <g>
@@ -72,7 +72,7 @@ export function DayDial({ d, onHour }: { d: Day; onHour: (h: number) => void }) 
       <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
         {hover !== null ? (
           <div>
-            <div className="num text-[26px] font-semibold leading-none tracking-[-0.02em]">{String(hover).padStart(2, "0")}:00</div>
+            <div className="num text-[26px] font-semibold leading-none tracking-[-0.02em]">{minClock(hover * 60)}</div>
             <div className="num mt-1.5 text-xs text-muted-foreground">{dur(hourMS(hover))} active</div>
             <div className="mt-0.5 text-[11px] text-faint">click to zoom</div>
           </div>

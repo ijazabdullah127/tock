@@ -20,7 +20,7 @@ import { useLive } from "@/lib/live";
 import { moves } from "@/lib/moves";
 import { Button } from "@/components/ui/button";
 import { useApi, type Day } from "@/lib/api";
-import { addDays, delta, dur, hhmm, parseDate } from "@/lib/format";
+import { addDays, delta, dur, hhmm, is12h, parseDate } from "@/lib/format";
 import { go } from "@/lib/route";
 import { fit, type Win } from "@/lib/zoom";
 import { byKindRows, kindColor, kindHelp, kindLabel } from "@/lib/kinds";
@@ -256,7 +256,7 @@ export default function Today({ date, tick }: { date: string; tick: number }) {
               <li key={b.start}>
                 <button className="-mx-2 flex w-[calc(100%+1rem)] items-center gap-4 rounded-md px-2 py-2 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={() => zoomTo(b.start, b.end)}>
-                <span className="num w-28 shrink-0 text-muted-foreground">{hhmm(b.start)}–{hhmm(b.end)}</span>
+                <span className={`num ${is12h() ? "w-36" : "w-28"} shrink-0 text-muted-foreground`}>{hhmm(b.start)}–{hhmm(b.end)}</span>
                 <i className="h-2 w-2 shrink-0 rounded-sm" style={{ background: kindColor(b.kind) }} />
                 <span className="min-w-0 flex-1 truncate">
                   {b.name}

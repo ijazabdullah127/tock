@@ -10,7 +10,7 @@ import { Explain, Sum, Why } from "@/components/Explain";
 import { STATS } from "@/lib/explain";
 import type { ReactNode } from "react";
 import { useApi, type Hours, type Month } from "@/lib/api";
-import { delta, dur, monthTitle, parseDate } from "@/lib/format";
+import { delta, dur, hourLabel, monthTitle, parseDate } from "@/lib/format";
 import { go } from "@/lib/route";
 import { useGroups } from "@/lib/groups";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,7 @@ export default function Trends({ date }: { date: string }) {
   const hours = useApi<Hours>("/api/hours");
 
   const best = hours.data
-    ? Array.from({ length: 24 }, (_, h) => ({ h: String(h).padStart(2, "0"), min: Math.round(hours.data!.grid.reduce((s, row) => s + row[h], 0) / 7) })).filter((_, h) => h >= 6 && h <= 23)
+    ? Array.from({ length: 24 }, (_, h) => ({ h: hourLabel(h), min: Math.round(hours.data!.grid.reduce((s, row) => s + row[h], 0) / 7) })).filter((_, h) => h >= 6 && h <= 23)
     : [];
 
   return (

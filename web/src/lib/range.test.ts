@@ -16,6 +16,15 @@ test("atClock reads HH:MM on the day", () => {
   expect(atClock(day, "")).toBeNull();
 });
 
+test("atClock also reads 12-hour times", () => {
+  expect(atClock(day, "9:05am")).toBe(d0 + 9 * H + 5 * 60_000);
+  expect(atClock(day, "5:20 PM")).toBe(d0 + 17 * H + 20 * 60_000);
+  expect(atClock(day, "12am")).toBe(d0);
+  expect(atClock(day, "12:30pm")).toBe(d0 + 12 * H + 30 * 60_000);
+  expect(atClock(day, "13pm")).toBeNull();
+  expect(atClock(day, "9")).toBeNull();
+});
+
 test("snapAt maps a fraction of the axis to a whole minute", () => {
   const from = d0 + 8 * H, to = d0 + 10 * H;
   expect(snapAt(0, from, to)).toBe(from);

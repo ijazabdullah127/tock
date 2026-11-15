@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Minus, Plus, Maximize2 } from "lucide-react";
 import type { Outage, Row } from "@/lib/api";
-import { dur, hhmm, parseDate } from "@/lib/format";
+import { dur, hhmm, hourLabel, parseDate } from "@/lib/format";
 import { kindClass, kindColor, kindLabel } from "@/lib/kinds";
 import { snapAt } from "@/lib/range";
 import { onDay } from "@/lib/outage";
@@ -308,7 +308,7 @@ export function Timeline({ rows, outages, date, first, last, today, onPick, onRa
 
 function tickText(t: number): string {
   const d = new Date(t);
-  return d.getMinutes() === 0 ? String(d.getHours()).padStart(2, "0") : hhmm(t);
+  return d.getMinutes() === 0 ? hourLabel(d.getHours()) : hhmm(t);
 }
 
 function ZoomButton({ label, disabled, onClick, children }: { label: string; disabled?: boolean; onClick: () => void; children: React.ReactNode }) {

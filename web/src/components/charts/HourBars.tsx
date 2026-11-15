@@ -1,7 +1,7 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { SERIES, kindColor, kindFill, kindLabel } from "@/lib/kinds";
-import { dur } from "@/lib/format";
+import { dur, hourLabel, minClock } from "@/lib/format";
 import { KindTable } from "./KindTable";
 
 /** HourBars: minutes per hour, stacked by kind, from hourFirst to hourLast. */
@@ -9,7 +9,7 @@ import { KindTable } from "./KindTable";
 export function HourBars({ hours, first, last, height = 220, onHour }: { hours: Record<string, number[]>; first: number; last: number; height?: number; onHour?: (h: number) => void }) {
   const rows = [];
   for (let h = first; h <= last; h++) {
-    const r: Record<string, number | string> = { h: String(h).padStart(2, "0") };
+    const r: Record<string, number | string> = { h: hourLabel(h), at: minClock(h * 60) };
     for (const k of SERIES) r[k || "unlabelled"] = Math.round((hours[k]?.[h] ?? 0) / 60_000);
     rows.push(r);
   }
@@ -44,7 +44,7 @@ export function HourBars({ hours, first, last, height = 220, onHour }: { hours: 
         ))}
       </BarChart>
     </ChartContainer>
-    <KindTable caption="Minutes per hour, by kind of time" rows={rows.map((r) => ({ label: `${r.h}:00`, byKind: Object.fromEntries(SERIES.map((k) => [k, Number(r[k || "unlabelled"]) * 60_000])) }))} />
+    <KindTable caption="Minutes per hour, by kind of time" rows={rows.map((r) => ({ label: String(r.at), byKind: Object.fromEntries(SERIES.map((k) => [k, Number(r[k || "unlabelled"]) * 60_000])) }))} />
     </>
   );
 }

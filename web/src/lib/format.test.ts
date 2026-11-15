@@ -38,7 +38,7 @@ test("doneText names the range a timeline label covers, else the count", () => {
   expect(doneText({ ...d, ms: 0 }, "14:41–14:53 (12m)")).toBe("Labelled 14:41–14:53 (12m) · Research");
 });
 
-import { holdsToday, mondayOf, periodTitle, setWeekStart, stepDate, weekHeads, weekStartOf } from "./format";
+import { holdsToday, hhmm, hourLabel, is12h, minClock, mondayOf, periodTitle, setClock, setWeekStart, stepDate, weekHeads, weekStartOf } from "./format";
 
 test("the date control steps by the view's unit and stops at today", () => {
   const today = new Date(2026, 10, 11); // Wed 11 Nov
@@ -87,4 +87,30 @@ test("weeks start on the week_start day", () => {
   } finally {
     setWeekStart();
   }
+});
+
+test("the 12-hour clock follows [display] clock", () => {
+  const at = (h: number, m: number) => new Date(2026, 10, 15, h, m).getTime();
+  expect(hhmm(at(0, 0))).toBe("00:00");
+  expect(hhmm(at(17, 20))).toBe("17:20");
+  expect(hourLabel(9)).toBe("09");
+  try {
+    setClock("12h");
+    expect(is12h()).toBe(true);
+    expect(hhmm(at(0, 0))).toBe("12:00am");
+    expect(hhmm(at(0, 5))).toBe("12:05am");
+    expect(hhmm(at(9, 5))).toBe("9:05am");
+    expect(hhmm(at(12, 0))).toBe("12:00pm");
+    expect(hhmm(at(17, 20))).toBe("5:20pm");
+    expect(minClock(23 * 60 + 59)).toBe("11:59pm");
+    expect(hourLabel(0)).toBe("12am");
+    expect(hourLabel(9)).toBe("9am");
+    expect(hourLabel(12)).toBe("12pm");
+    expect(hourLabel(18)).toBe("6pm");
+    setClock("24h");
+    expect(hhmm(at(17, 20))).toBe("17:20");
+  } finally {
+    setClock();
+  }
+  expect(is12h()).toBe(false);
 });

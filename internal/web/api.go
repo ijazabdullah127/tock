@@ -180,6 +180,8 @@ type statusJSON struct {
 	// WeekStart is the first day of the week: "monday", "sunday" or
 	// "saturday".
 	WeekStart string `json:"weekStart"`
+	// Clock is how the dashboard shows times of day: "24h" or "12h".
+	Clock string `json:"clock"`
 }
 
 type blockJSON struct {
@@ -388,7 +390,8 @@ func (s *Server) status(*http.Request) (any, error) {
 	}
 	cfg := s.a.Config()
 	out := statusJSON{Recording: h.TrackdUp && !h.Paused(), LastSeenMS: h.LastSeenMS, Focus: cfg.Focus.Enabled, Billing: cfg.Billing.Enabled,
-		Presets: append([]int{}, cfg.Focus.Presets...), WeekStart: cfg.Display.WeekStartName()}
+		Presets: append([]int{}, cfg.Focus.Presets...), WeekStart: cfg.Display.WeekStartName(),
+		Clock: cfg.Display.ClockFormat().String()}
 	if h.Paused() {
 		out.Paused = h.CapturePaused
 	}

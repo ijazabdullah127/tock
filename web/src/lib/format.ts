@@ -28,10 +28,38 @@ export function pct(part: number, whole: number): string {
   return `${Math.round((part / whole) * 100)} %`;
 }
 
-/** hhmm(ms) is the local wall-clock time, "09:05". */
+/** twelve is config.toml's [display] clock = "12h"; 24-hour otherwise. */
+let twelve = false;
+
+/** setClock takes clock as /api/status sends it: "12h" turns on the
+ *  12-hour clock, anything else is 24-hour. */
+export function setClock(name?: string) {
+  twelve = name === "12h";
+}
+
+/** is12h says whether times of day are shown on the 12-hour clock. */
+export function is12h(): boolean {
+  return twelve;
+}
+
+/** minClock(545) is minute 545 of the day: "09:05", or "9:05am" on the
+ *  12-hour clock ("12:00am" midnight, "12:00pm" noon). */
+export function minClock(min: number): string {
+  const h = Math.floor(min / 60) % 24, m = String(min % 60).padStart(2, "0");
+  if (!twelve) return `${String(h).padStart(2, "0")}:${m}`;
+  return `${h % 12 || 12}:${m}${h < 12 ? "am" : "pm"}`;
+}
+
+/** hourLabel(9) is an hour-only tick: "09", or "9am" on the 12-hour clock. */
+export function hourLabel(h: number): string {
+  if (!twelve) return String(h).padStart(2, "0");
+  return `${h % 12 || 12}${h % 24 < 12 ? "am" : "pm"}`;
+}
+
+/** hhmm(ms) is the local wall-clock time, "09:05" or "9:05am". */
 export function hhmm(ms: number): string {
   const d = new Date(ms);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  return minClock(d.getHours() * 60 + d.getMinutes());
 }
 
 /** isoDate(d) is the local date as YYYY-MM-DD. */

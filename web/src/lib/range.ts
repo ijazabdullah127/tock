@@ -1,15 +1,21 @@
 // Time ranges for timeline edits: typed as HH:MM on the shown day, or
 // dragged on the timeline and snapped to whole minutes.
-import { addDays, hhmm, parseDate } from "./format";
+import { addDays, hhmm, is12h, parseDate } from "./format";
 
 const MIN = 60_000;
 
 /** atClock(date, "09:05") is that wall-clock time on the day, or null if
- *  the text is not HH:MM. "24:00" is the end of the day. */
+ *  the text is not HH:MM or a 12-hour time ("9:05am", "5pm"). "24:00" is
+ *  the end of the day. */
 export function atClock(date: string, text: string): number | null {
-  const m = text.trim().match(/^(\d{1,2}):(\d{2})$/);
-  if (!m) return null;
-  const h = Number(m[1]), mm = Number(m[2]);
+  const m = text.trim().toLowerCase().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/);
+  if (!m || (!m[2] && !m[3])) return null;
+  let h = Number(m[1]);
+  const mm = Number(m[2] ?? 0);
+  if (m[3]) {
+    if (h < 1 || h > 12) return null;
+    h = (h % 12) + (m[3] === "pm" ? 12 : 0);
+  }
   if (h > 24 || mm > 59 || (h === 24 && mm > 0)) return null;
   const d = parseDate(date);
   d.setHours(h, mm, 0, 0);
@@ -25,7 +31,7 @@ export function snapAt(f: number, from: number, to: number): number {
 
 /** rangeError is "" for a range the server takes, else why not. */
 export function rangeError(from: number | null, to: number | null, now: number): string {
-  if (from === null || to === null) return "Times are HH:MM";
+  if (from === null || to === null) return is12h() ? "Times are like 9:05am" : "Times are HH:MM";
   if (to <= from) return "The range ends before it starts";
   if (to > now) return "The range reaches into the future";
   return "";

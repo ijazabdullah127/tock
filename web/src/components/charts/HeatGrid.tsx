@@ -1,4 +1,5 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { hourLabel, minClock } from "@/lib/format";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -13,7 +14,7 @@ export function HeatGrid({ grid, from = 7, to = 22 }: { grid: number[][]; from?:
       <div className="inline-grid min-w-full gap-[3px]" style={{ gridTemplateColumns: `2.25rem repeat(${hours.length}, minmax(14px, 1fr))` }}>
         <span />
         {hours.map((h) => (
-          <span key={h} className="num text-center text-[10px] text-faint">{h % 3 === 0 ? String(h).padStart(2, "0") : ""}</span>
+          <span key={h} className="num text-center text-[10px] text-faint">{h % 3 === 0 ? hourLabel(h) : ""}</span>
         ))}
         {grid.map((row, d) => (
           <Row key={d} day={DAYS[d]} cells={hours.map((h) => row[h] ?? 0)} hours={hours} max={max} />
@@ -36,7 +37,7 @@ function Row({ day, cells, hours, max }: { day: string; cells: number[]; hours: 
             />
           </TooltipTrigger>
           <TooltipContent className="num text-xs">
-            {day} {String(hours[i]).padStart(2, "0")}:00 · {v} min focus
+            {day} {minClock(hours[i] * 60)} · {v} min focus
           </TooltipContent>
         </Tooltip>
       ))}
