@@ -69,7 +69,7 @@ func (a *App) GuardTick(call bool) ([]focus.Event, focus.Guard, error) {
 		return nil, focus.Guard{}, err
 	}
 	in := focus.Input{Now: now, Day: day, Views: vs, Labels: labels, Sessions: focusSessions(ss),
-		Call: call, State: st, Cfg: a.cfg.Focus, Routine: a.cfg.Routine, Hours: a.cfg.Hours}
+		Call: call, State: st, Cfg: a.cfg.Focus, Routine: a.cfg.Routine, Hours: a.cfg.Hours, Clock: a.cfg.Display.ClockFormat()}
 	if open != nil && now >= open.PlannedMS {
 		// The open session ends on this tick: its done notice is scored with
 		// the current weights. On every other tick no event uses them, so the

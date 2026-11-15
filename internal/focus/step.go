@@ -443,7 +443,7 @@ func stepAway(in Input, st *State) (Event, bool) {
 		return Event{}, false
 	}
 	st.AwayAt = a.To
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(in.Day.Location()).Format("15:04") }
+	clock := func(ms int64) string { return in.Clock.MS(ms, in.Day.Location()) }
 	ask := "What was it?"
 	if b := in.AbsenceBefore; b.Category != "" {
 		what := b.Category

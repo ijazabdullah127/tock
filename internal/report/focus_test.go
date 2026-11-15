@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"tock/internal/clockfmt"
 	"tock/internal/focus"
 	"tock/internal/recommend"
 	"tock/internal/stats"
@@ -40,15 +41,15 @@ func TestSessionText(t *testing.T) {
 
 	done := run
 	done.EndMS, done.DeepMS, done.Interruptions = start+25*60_000, 21*60_000, 2
-	if got, want := SessionLine(done, zone, false), "09:12  manual   25m  deep  84%  2 int"; got != want {
+	if got, want := SessionLine(done, zone, clockfmt.H24, false), "09:12  manual   25m  deep  84%  2 int"; got != want {
 		t.Errorf("SessionLine = %q, want %q", got, want)
 	}
 	done.Wakes, done.WakesBack = 2, 1
-	if got, want := SessionLine(done, zone, false), "09:12  manual   25m  deep  84%  2 int  woken 2× · back 1×"; got != want {
+	if got, want := SessionLine(done, zone, clockfmt.H24, false), "09:12  manual   25m  deep  84%  2 int  woken 2× · back 1×"; got != want {
 		t.Errorf("SessionLine(woken) = %q, want %q", got, want)
 	}
 	auto := focus.Session{Kind: focus.KindAuto, StartMS: start, EndMS: start + 100*60_000, DeepMS: 97 * 60_000}
-	if got, want := SessionLine(auto, zone, true), "Thu 09:12  auto    1h40  deep  97%"; got != want {
+	if got, want := SessionLine(auto, zone, clockfmt.H24, true), "Thu 09:12  auto    1h40  deep  97%"; got != want {
 		t.Errorf("SessionLine(auto) = %q, want %q", got, want)
 	}
 }

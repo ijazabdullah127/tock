@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"tock/internal/clockfmt"
 	"tock/internal/recommend"
 )
 
@@ -20,7 +21,7 @@ func profileMinutes(ms int64) int64 { return (ms + 30_000) / 60_000 }
 // line, the title, each weekday's top hours in clock order, then the typical
 // session and the sustained focus. A thin history says so in the title and
 // lists no hours.
-func ProfileLines(p recommend.Profile) []string {
+func ProfileLines(p recommend.Profile, clk clockfmt.Clock) []string {
 	title := "Best focus hours"
 	if p.Thin {
 		title = fmt.Sprintf("Best focus hours (not enough history: %d of %d days)", p.ActiveDays, p.MinDays)
@@ -31,7 +32,7 @@ func ProfileLines(p recommend.Profile) []string {
 		sort.Ints(hs)
 		parts := make([]string, len(hs))
 		for i, h := range hs {
-			parts[i] = fmt.Sprintf("%02d–%02d", h, (h+1)%24)
+			parts[i] = clk.Hour(h) + "–" + clk.Hour((h+1)%24)
 		}
 		hours := "–"
 		if len(parts) > 0 {
@@ -55,7 +56,7 @@ func ProfileLines(p recommend.Profile) []string {
 // HourGrid is the weekday x hour table of mean focus minutes: hour columns
 // 07 to 22, widened to every hour that has data, "·" where a weekday has no
 // data at that hour.
-func HourGrid(p recommend.Profile) []string {
+func HourGrid(p recommend.Profile, clk clockfmt.Clock) []string {
 	from, to := 7, 22
 	for wd := range p.Hours {
 		for h, st := range p.Hours[wd] {
@@ -68,12 +69,12 @@ func HourGrid(p recommend.Profile) []string {
 		var b strings.Builder
 		b.WriteString(label)
 		for h := from; h <= to; h++ {
-			fmt.Fprintf(&b, "%4s", cell(h))
+			fmt.Fprintf(&b, "%*s", clk.Width()-1, cell(h))
 		}
 		return strings.TrimRight(b.String(), " ")
 	}
 	out := []string{"Mean focus minutes per hour, last 28 days",
-		row("   ", func(h int) string { return fmt.Sprintf("%02d", h) })}
+		row("   ", clk.Hour)}
 	for _, wd := range profileWeekdays {
 		out = append(out, row(wd.String()[:3], func(h int) string {
 			st := p.Hours[wd][h]
@@ -89,14 +90,14 @@ func HourGrid(p recommend.Profile) []string {
 // ReplyLines are the two lines `tock trends` ends with: how many suggestions and
 // break reminders were answered with the yes button, and the hours the replies
 // muted. Both count the last recommend.ReplyDays only.
-func ReplyLines(l recommend.Learning) []string {
+func ReplyLines(l recommend.Learning, clk clockfmt.Clock) []string {
 	return []string{
-		replyLine("Suggestions", "accepted", l, recommend.KindFocus),
-		replyLine("Breaks", "taken", l, recommend.KindBreak),
+		replyLine("Suggestions", "accepted", l, recommend.KindFocus, clk),
+		replyLine("Breaks", "taken", l, recommend.KindBreak, clk),
 	}
 }
 
-func replyLine(label, verb string, l recommend.Learning, kind string) string {
+func replyLine(label, verb string, l recommend.Learning, kind string, clk clockfmt.Clock) string {
 	accepted, answered := l.Totals(kind)
 	if answered == 0 {
 		return label + ": none answered yet"
@@ -104,7 +105,7 @@ func replyLine(label, verb string, l recommend.Learning, kind string) string {
 	line := fmt.Sprintf("%s: %d of %d %s", label, accepted, answered, verb)
 	var muted []string
 	for _, h := range l.MutedHours(kind) {
-		muted = append(muted, fmt.Sprintf("%02d–%02d", h, (h+1)%24))
+		muted = append(muted, clk.Hour(h)+"–"+clk.Hour((h+1)%24))
 	}
 	if len(muted) > 0 {
 		line += " · muted at " + strings.Join(muted, ", ")

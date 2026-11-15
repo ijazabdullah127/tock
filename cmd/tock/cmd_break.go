@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"time"
 )
 
 // breakDefaultMin and breakMaxMin bound tock break's length.
@@ -35,6 +34,6 @@ func cmdBreak(env Env, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(env.Stdout, "break: %d min, until %s\n", n, time.UnixMilli(until).In(env.Now().Location()).Format("15:04"))
+	fmt.Fprintf(env.Stdout, "break: %d min, until %s\n", n, envClock(env).MS(until, env.Now().Location()))
 	return nil
 }

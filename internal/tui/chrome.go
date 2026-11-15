@@ -64,8 +64,8 @@ func (m Model) header() string {
 	// The widest right side that fits: date, clock and trackd; then the
 	// clock and trackd's dot; then the dot.
 	for _, right := range []string{
-		session + sDim.Render(m.now().Format("Mon 2 Jan  15:04")+"  ") + m.trackdText(),
-		session + sDim.Render(m.now().Format("15:04")+" ") + m.trackdDot(),
+		session + sDim.Render(m.clk.Stamp(m.now(), "Mon 2 Jan  ")+"  ") + m.trackdText(),
+		session + sDim.Render(m.clk.Time(m.now())+" ") + m.trackdDot(),
 		session + m.trackdDot(),
 	} {
 		if ansi.StringWidth(left)+ansi.StringWidth(right)+1 <= m.width {

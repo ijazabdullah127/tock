@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/config"
 	"tock/internal/recommend"
 	"tock/internal/span"
@@ -219,7 +220,8 @@ type Input struct {
 	Call      bool                // a camera or microphone is in use now
 	State     State
 	Cfg       config.Focus
-	RecapBody string // the recap text; the caller fills it when RecapDue
+	Clock     clockfmt.Clock // how notices show times of day ([display] clock)
+	RecapBody string         // the recap text; the caller fills it when RecapDue
 	// Routine holds the [routine] switches; the app passes cfg.Routine.
 	Routine config.Routine
 	// Hours is the work schedule; the zero value makes every day a work day.

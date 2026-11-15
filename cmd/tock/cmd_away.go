@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/report"
 )
 
@@ -49,7 +50,8 @@ func cmdAway(env Env, args []string) error {
 		return err
 	}
 	loc := now.Location()
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
+	clk := a.Config().Display.ClockFormat()
+	clock := func(ms int64) string { return clk.MS(ms, loc) }
 	span := func(iv classify.Interval) string {
 		return fmt.Sprintf("%s–%s (%s)", clock(iv.From), clock(iv.To), report.Dur(iv.To-iv.From))
 	}
@@ -64,7 +66,7 @@ func cmdAway(env Env, args []string) error {
 			if b := d.AwayBefore[i]; b.Category != "" {
 				after, same = "  after "+report.LabelText(b.Category, b.Project), true
 			}
-			fmt.Fprintf(env.Stdout, "%s–%s  %5s%s\n", clock(iv.From), clock(iv.To), report.Dur(iv.To-iv.From), after)
+			fmt.Fprintf(env.Stdout, "%s–%s  %5s%s\n", clk.ColMS(iv.From, loc), clk.ColMS(iv.To, loc), report.Dur(iv.To-iv.From), after)
 		}
 		first := clock(d.Away[0].From)
 		fmt.Fprintf(env.Stdout, "label: tock away %s <Category>[/<Project>] · leave idle: tock away --skip %s\n", first, first)
@@ -79,7 +81,7 @@ func cmdAway(env Env, args []string) error {
 	var starts []string
 	for i := range d.Away {
 		starts = append(starts, clock(d.Away[i].From))
-		if clock(d.Away[i].From) == fs.Arg(0) {
+		if m, ok := clockfmt.ParseMin(fs.Arg(0)); ok && clockfmt.H24.MS(d.Away[i].From, loc) == clockfmt.H24.Min(m) {
 			iv, before = &d.Away[i], d.AwayBefore[i]
 		}
 	}

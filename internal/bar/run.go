@@ -10,6 +10,7 @@ import (
 
 	"tock/internal/app"
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/config"
 	"tock/internal/focus"
 	"tock/internal/recommend"
@@ -49,7 +50,7 @@ func Menu(a *app.App, id string) (string, error) {
 	switch id {
 	case IDSnoozeDistract:
 		until, err := a.SnoozeDistract(0, time.Duration(a.Config().Focus.SnoozeMS)*time.Millisecond)
-		return snoozedMsg(0, until, err)
+		return snoozedMsg(a.Config().Display.ClockFormat(), 0, until, err)
 	case IDSnoozeOff:
 		if _, err := a.ResumeDistract(); err != nil {
 			return "", err
@@ -80,7 +81,8 @@ func Menu(a *app.App, id string) (string, error) {
 			if !ok {
 				return "", fmt.Errorf("menu %q: %w", id, ErrUnknown)
 			}
-			return answerMsg(a.AnswerRecommendAt(rid, at, "", p.reply))
+			res, err := a.AnswerRecommendAt(rid, at, "", p.reply)
+			return answerMsg(a.Config().Display.ClockFormat(), res, err)
 		}
 	}
 	if v, ok := strings.CutPrefix(id, IDRate); ok {
@@ -171,7 +173,7 @@ func toggleFeature(a *app.App, fid string) (string, error) {
 
 // snoozedMsg turns the result of SnoozeDistract for session (0: whatever
 // runs) into the log line.
-func snoozedMsg(session int64, until time.Time, err error) (string, error) {
+func snoozedMsg(clk clockfmt.Clock, session int64, until time.Time, err error) (string, error) {
 	switch {
 	case errors.Is(err, store.ErrNoSession) && session > 0:
 		return "that session is no longer running, nothing snoozed", nil
@@ -180,7 +182,7 @@ func snoozedMsg(session int64, until time.Time, err error) (string, error) {
 	case err != nil:
 		return "", err
 	}
-	return "distraction notices snoozed until " + until.Format("15:04"), nil
+	return "distraction notices snoozed until " + clk.Time(until), nil
 }
 
 // sessionID parses the session id of a menu item id.
@@ -192,7 +194,7 @@ func sessionID(v string) (int64, bool) {
 // answerMsg turns the result of AnswerRecommend into the line a click shows. A
 // suggestion that is no longer open, or a session already running, is an
 // answer to the click, not a failure.
-func answerMsg(res app.RecAnswer, err error) (string, error) {
+func answerMsg(clk clockfmt.Clock, res app.RecAnswer, err error) (string, error) {
 	switch {
 	case errors.Is(err, app.ErrNoRecommend):
 		return "that suggestion is no longer open", nil
@@ -201,7 +203,7 @@ func answerMsg(res app.RecAnswer, err error) (string, error) {
 	case err != nil:
 		return "", err
 	case res.BreakUntilMS > 0:
-		return "break until " + res.BreakUntil.Format("15:04"), nil
+		return "break until " + clk.Time(res.BreakUntil), nil
 	case res.Session != nil:
 		return fmt.Sprintf("started %d min session", (res.Session.PlannedMS-res.Session.StartMS)/60_000), nil
 	}
@@ -276,7 +278,7 @@ func Respond(a *app.App, id int64, action string) (string, error) {
 		return fmt.Sprintf("break reminders snoozed for %d min", int(SnoozeFor.Minutes())), nil
 	case ActSnoozeDistract:
 		until, err := a.SnoozeDistract(d.Session, time.Duration(d.SnoozeMin)*time.Minute)
-		return snoozedMsg(d.Session, until, err)
+		return snoozedMsg(a.Config().Display.ClockFormat(), d.Session, until, err)
 	case ActBack:
 		return "back to work", nil
 	case ActMore:
@@ -317,7 +319,8 @@ func Respond(a *app.App, id int64, action string) (string, error) {
 		}
 		// Row ids can be reused, so the send time the notice was queued with
 		// must match the row's, as for the menu and the screen.
-		return answerMsg(a.AnswerRecommendAt(d.Rec, d.RecAt, kind, reply))
+		res, err := a.AnswerRecommendAt(d.Rec, d.RecAt, kind, reply)
+		return answerMsg(a.Config().Display.ClockFormat(), res, err)
 	}
 	switch {
 	case strings.HasPrefix(action, ActUrgeResisted), strings.HasPrefix(action, ActUrgeGiven):

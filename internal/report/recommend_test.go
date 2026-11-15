@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"tock/internal/clockfmt"
 	"tock/internal/recommend"
 )
 
@@ -22,12 +23,12 @@ func TestProfileLines(t *testing.T) {
 		"Sat  09–10 · 10–11 · 14–15", "Sun  –",
 		"Typical session: 45 min (from 12 good sessions)",
 		"Sustained focus: 52 min before a break"}
-	if got := ProfileLines(p); !reflect.DeepEqual(got, want) {
+	if got := ProfileLines(p, clockfmt.H24); !reflect.DeepEqual(got, want) {
 		t.Errorf("ProfileLines =\n%q\nwant\n%q", got, want)
 	}
 
 	p.GoodSessions, p.SessionMS, p.SustainedMS = 0, 25*profMin, 0
-	got := ProfileLines(p)
+	got := ProfileLines(p, clockfmt.H24)
 	if got[len(got)-2] != "Typical session: 25 min (default, not enough sessions yet)" ||
 		got[len(got)-1] != "Sustained focus: (not enough history)" {
 		t.Errorf("default lines = %q", got[len(got)-2:])
@@ -36,7 +37,7 @@ func TestProfileLines(t *testing.T) {
 	var thin recommend.Profile
 	thin.MinDays, thin.ActiveDays, thin.Thin = 7, 4, true
 	thin.SessionMS = 25 * profMin
-	got = ProfileLines(thin)
+	got = ProfileLines(thin, clockfmt.H24)
 	if got[1] != "Best focus hours (not enough history: 4 of 7 days)" {
 		t.Errorf("thin title = %q", got[1])
 	}
@@ -48,7 +49,7 @@ func TestProfileLines(t *testing.T) {
 
 	var late recommend.Profile
 	late.Top[time.Sunday] = []int{23}
-	if got := ProfileLines(late); got[8] != "Sun  23–00" {
+	if got := ProfileLines(late, clockfmt.H24); got[8] != "Sun  23–00" {
 		t.Errorf("Sunday = %q, want Sun  23–00", got[8])
 	}
 }
@@ -92,7 +93,7 @@ func TestHourGrid(t *testing.T) {
 		gridRow("Tue", 7, 22, nil), gridRow("Wed", 7, 22, nil), gridRow("Thu", 7, 22, nil), gridRow("Fri", 7, 22, nil),
 		gridRow("Sat", 7, 22, map[int]string{9: "60", 14: "20"}),
 		gridRow("Sun", 7, 22, nil)}
-	if got := HourGrid(p); !reflect.DeepEqual(got, want) {
+	if got := HourGrid(p, clockfmt.H24); !reflect.DeepEqual(got, want) {
 		t.Errorf("HourGrid =\n%s\nwant\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}
 	if !strings.HasPrefix(want[2], "Mon   ·   ·  50   ·") {
@@ -101,7 +102,7 @@ func TestHourGrid(t *testing.T) {
 
 	hourStats(&p, time.Tuesday, 5, 3, 10*profMin)
 	hourStats(&p, time.Tuesday, 23, 4, 29_000)
-	got := HourGrid(p)
+	got := HourGrid(p, clockfmt.H24)
 	if got[1] != gridHeader(5, 23) {
 		t.Errorf("widened header = %q, want %q", got[1], gridHeader(5, 23))
 	}
@@ -130,7 +131,7 @@ func TestReplyLines(t *testing.T) {
 	}
 	check := func(name string, recs []recommend.Rec, want ...string) {
 		t.Helper()
-		got := ReplyLines(recommend.Learn(recs, now))
+		got := ReplyLines(recommend.Learn(recs, now), clockfmt.H24)
 		if strings.Join(got, "\n") != strings.Join(want, "\n") {
 			t.Errorf("%s:\n%s\nwant\n%s", name, strings.Join(got, "\n"), strings.Join(want, "\n"))
 		}

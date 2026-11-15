@@ -39,7 +39,7 @@ func cmdTrends(env Env, args []string) error {
 		if err != nil {
 			return err
 		}
-		for _, l := range report.HourGrid(p) {
+		for _, l := range report.HourGrid(p, a.Config().Display.ClockFormat()) {
 			fmt.Fprintln(env.Stdout, l)
 		}
 		return nil
@@ -60,14 +60,14 @@ func cmdTrends(env Env, args []string) error {
 	if err != nil {
 		return err
 	}
-	for _, l := range report.ProfileLines(p) {
+	for _, l := range report.ProfileLines(p, a.Config().Display.ClockFormat()) {
 		fmt.Fprintln(env.Stdout, l)
 	}
 	learn, err := a.Learning(now)
 	if err != nil {
 		return err
 	}
-	for _, l := range report.ReplyLines(learn) {
+	for _, l := range report.ReplyLines(learn, a.Config().Display.ClockFormat()) {
 		fmt.Fprintln(env.Stdout, l)
 	}
 	return nil

@@ -7,6 +7,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"tock/internal/clockfmt"
 	"tock/internal/report"
 	"tock/internal/stats"
 )
@@ -48,7 +49,7 @@ func (t todayTab) scoreView(w, h int, loc *time.Location) []string {
 		"",
 	}
 	room := max(h-len(out), 1)
-	lines := blockLines(st.Blocks, loc)
+	lines := blockLines(st.Blocks, loc, t.day.Clock)
 	if len(lines) > room {
 		more := len(lines) - room + 1
 		lines = append(lines[:room-1], fmt.Sprintf("+%d more", more))
@@ -82,13 +83,13 @@ func targetText(t stats.Target) string {
 	return fmt.Sprintf("%s = median focus of the last %d workdays × 1.1, 2h–6h", report.Dur(t.MS), t.Workdays)
 }
 
-func blockLines(bs []stats.Block, loc *time.Location) []string {
+func blockLines(bs []stats.Block, loc *time.Location, clk clockfmt.Clock) []string {
 	if len(bs) == 0 {
 		return []string{"none (a block is 5m of deep work; breaks under 1m are allowed)"}
 	}
 	out := make([]string, len(bs))
 	for i, b := range bs {
-		out[i] = time.UnixMilli(b.Start).In(loc).Format("15:04") + "–" + time.UnixMilli(b.End).In(loc).Format("15:04") +
+		out[i] = clk.ColMS(b.Start, loc) + "–" + clk.ColMS(b.End, loc) +
 			"  " + report.Dur(b.DeepMS)
 	}
 	return out

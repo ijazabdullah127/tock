@@ -18,7 +18,7 @@ const (
 // timed plan items.
 // "Yesterday: 6h12 tracked, score 74, goals 2/3 met. Today: 10:00 Standup."
 // today is plan.Rows for today: only the rows of the Today section with a
-// time are listed, in the order given.
+// time are listed, in the order given, with times as y.Clock says.
 func StartBody(y Day, today []plan.Row) string {
 	s := yesterdayText(y)
 	var items []string
@@ -27,7 +27,7 @@ func StartBody(y Day, today []plan.Row) string {
 			continue
 		}
 		if m, ok := plan.Clock(r.Item); ok {
-			items = append(items, fmt.Sprintf("%02d:%02d %s", m/60, m%60, Cut(r.Text, RoutineItemCells)))
+			items = append(items, y.Clock.Min(m)+" "+Cut(r.Text, RoutineItemCells))
 		}
 	}
 	if len(items) == 0 {
@@ -81,6 +81,6 @@ func MiddayBody(d Day) string {
 // time since the work hours ended.
 // "Past work hours: 9h40 tracked today, 1h05 after 18:00. Time to stop."
 func OverBody(d Day, overMS int64) string {
-	return fmt.Sprintf("Past work hours: %s tracked today, %s after %02d:%02d. Time to stop.",
-		Dur(d.TrackedMS), Dur(overMS), d.Work.EndMin/60, d.Work.EndMin%60)
+	return fmt.Sprintf("Past work hours: %s tracked today, %s after %s. Time to stop.",
+		Dur(d.TrackedMS), Dur(overMS), d.Clock.Min(d.Work.EndMin))
 }

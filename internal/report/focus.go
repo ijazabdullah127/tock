@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"tock/internal/clockfmt"
 	"tock/internal/focus"
 	"tock/internal/recommend"
 )
@@ -114,12 +115,12 @@ func SessionStatus(s focus.Session, lv focus.Live, nowMS int64) string {
 // SessionLine renders one closed session for the history:
 // "09:12  manual   25m  deep  84%  2 int". withDay prefixes the weekday.
 // Auto sessions have no interruption count.
-func SessionLine(s focus.Session, loc *time.Location, withDay bool) string {
-	layout := "15:04"
+func SessionLine(s focus.Session, loc *time.Location, clk clockfmt.Clock, withDay bool) string {
+	at := clk.ColMS(s.StartMS, loc)
 	if withDay {
-		layout = "Mon 15:04"
+		at = time.UnixMilli(s.StartMS).In(loc).Format("Mon ") + at
 	}
-	line := fmt.Sprintf("%s  %-6s  %4s  deep %3d%%", time.UnixMilli(s.StartMS).In(loc).Format(layout),
+	line := fmt.Sprintf("%s  %-6s  %4s  deep %3d%%", at,
 		s.Kind, Dur(s.EndMS-s.StartMS), DeepPct(s, s.EndMS))
 	if s.Kind == focus.KindManual {
 		line += fmt.Sprintf("  %d int", s.Interruptions)

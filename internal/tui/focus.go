@@ -13,6 +13,7 @@ import (
 
 	"tock/internal/app"
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/config"
 	"tock/internal/focus"
 	"tock/internal/recommend"
@@ -26,6 +27,7 @@ const clockEvery = time.Second
 
 // focusTab shows the running session and this week's sessions.
 type focusTab struct {
+	clk    clockfmt.Clock // [display] clock
 	data   report.Focus
 	loaded bool
 	cursor int                   // the selected row of rows()
@@ -109,7 +111,7 @@ func (m Model) answerSuggestion(reply string) (tea.Model, tea.Cmd) {
 		case err != nil:
 			return "", err
 		case res.BreakUntilMS > 0:
-			return "break until " + res.BreakUntil.Format("15:04"), nil
+			return "break until " + m.clk.Time(res.BreakUntil), nil
 		case res.Session != nil:
 			return fmt.Sprintf("started %d min session", (res.Session.PlannedMS-res.Session.StartMS)/60_000), nil
 		}
@@ -228,9 +230,9 @@ func (m Model) noFinished() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// sessionClock is the "HH:MM" a session started at, in the card's zone.
+// sessionClock is the time a session started at, in the card's zone.
 func (m Model) sessionClock(s focus.Session) string {
-	return time.UnixMilli(s.StartMS).In(m.now().Location()).Format("15:04")
+	return m.clk.MS(s.StartMS, m.now().Location())
 }
 
 // ratingWords are the advisory words of the rate dialog, ★5 first. They are
@@ -295,7 +297,7 @@ func (m Model) openNote(s focus.Session) Model {
 // of its deep time first.
 func (m Model) openRefile(s focus.Session) Model {
 	loc := m.now().Location()
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
+	clock := func(ms int64) string { return m.clk.MS(ms, loc) }
 	what := fmt.Sprintf("Refile session %s–%s (%s) to", clock(s.StartMS), clock(s.EndMS), report.Dur(s.EndMS-s.StartMS))
 	p := newPicker(m.src, pickRefile, nil, "", what)
 	p.refileID = s.ID
@@ -335,7 +337,7 @@ func (m Model) startSession(n int) tea.Cmd {
 }
 
 func (m Model) stopSession() tea.Cmd {
-	src, loc := m.src, m.now().Location()
+	src, loc, clk := m.src, m.now().Location(), m.clk
 	return func() tea.Msg {
 		var msg doneMsg
 		src.do(func(a *app.App) {
@@ -344,7 +346,7 @@ func (m Model) stopSession() tea.Cmd {
 				msg.err = err
 				return
 			}
-			msg.text = "stopped: " + report.SessionLine(s, loc, false)
+			msg.text = "stopped: " + strings.TrimLeft(report.SessionLine(s, loc, clk, false), " ")
 		})
 		return msg
 	}
@@ -352,7 +354,7 @@ func (m Model) stopSession() tea.Cmd {
 
 // snoozeNotices holds distraction notices back for [focus] snooze minutes.
 func (m Model) snoozeNotices() tea.Cmd {
-	src := m.src
+	src, clk := m.src, m.clk
 	return func() tea.Msg {
 		var msg doneMsg
 		src.do(func(a *app.App) {
@@ -362,7 +364,7 @@ func (m Model) snoozeNotices() tea.Cmd {
 				msg.err = fmt.Errorf("could not snooze: %w", err)
 				return
 			}
-			msg.text = "distraction notices snoozed until " + until.Format("15:04")
+			msg.text = "distraction notices snoozed until " + clk.Time(until)
 		})
 		return msg
 	}
@@ -476,7 +478,7 @@ func (t focusTab) view(w, h int, now time.Time) []string {
 		word := "snooze notices"
 		if f.SnoozeUntilMS > nowMS {
 			body = append(body, center(sDim.Render("notices snoozed until "+
-				time.UnixMilli(f.SnoozeUntilMS).In(loc).Format("15:04")), inner))
+				t.clk.MS(f.SnoozeUntilMS, loc)), inner))
 			word = "resume notices"
 		}
 		body = append(body, "",
@@ -560,13 +562,13 @@ func (t focusTab) card(cw, h int, loc *time.Location) []string {
 			sDim.Render("A finished session gets a quality score and a card here.")}, cw)
 	}
 	if t.cursor > 0 {
-		title = "Session · " + time.UnixMilli(s.StartMS).In(loc).Format("Mon 15:04")
+		title = "Session · " + t.clk.Stamp(time.UnixMilli(s.StartMS).In(loc), "Mon ")
 	}
 	d := t.detail
 	if d == nil || d.Sess.ID != s.ID {
 		return card(title, []string{sDim.Render("loading…")}, cw)
 	}
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
+	clock := func(ms int64) string { return t.clk.MS(ms, loc) }
 	length := d.Sess.EndMS - d.Sess.StartMS
 	share := func(xs []focus.Share) string {
 		if txt := report.ShareText(xs); txt != "" {
@@ -626,7 +628,7 @@ func (t focusTab) sessionRows(ss []focus.Session, first int, loc *time.Location,
 			star = sBright.Render(fitRight("★"+strconv.Itoa(s.Rating), 3))
 		}
 		q := sBrand.Render(fitRight("Q"+strconv.Itoa(focus.Quality(s, t.data.Weights).Score), 4))
-		row := sText.Render(fit(report.SessionLine(s, loc, withDay), w-3-9)) + " " + q + " " + star
+		row := sText.Render(fit(report.SessionLine(s, loc, t.clk, withDay), w-3-9)) + " " + q + " " + star
 		if first+i == t.cursor {
 			out[i] = selRow(sBrand.Bold(true).Render("▸")+"  "+row, w)
 			continue

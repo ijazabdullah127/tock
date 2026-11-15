@@ -219,7 +219,7 @@ func doctorCalendar(env Env, enabled bool, h app.Health, ok func(name, detail st
 			bad("calendar", "no sync in the last 30 min", "see ~/.local/state/tock/trackd.log")
 			return
 		}
-		ok("calendar", "synced "+time.UnixMilli(h.CalendarSyncMS).In(env.Now().Location()).Format("15:04"))
+		ok("calendar", "synced "+envClock(env).MS(h.CalendarSyncMS, env.Now().Location()))
 	case "denied":
 		bad("calendar", "access denied", "System Settings › Privacy & Security › Calendars › trackd")
 		open(calendarSettingsURL)
@@ -346,7 +346,7 @@ func doctorSync(env Env, s config.Sync, ok func(name, detail string), bad func(n
 					n += " " + v
 				}
 				if m.LastMS > 0 {
-					n += " (last " + time.UnixMilli(m.LastMS).In(env.Now().Location()).Format("Mon 15:04") + ")"
+					n += " (last " + envClock(env).Stamp(time.UnixMilli(m.LastMS).In(env.Now().Location()), "Mon ") + ")"
 				}
 				names = append(names, n)
 			}
@@ -365,7 +365,7 @@ func doctorSync(env Env, s config.Sync, ok func(name, detail string), bad func(n
 			st.Close()
 			if name, ms, ok := strings.Cut(v, " "); ok {
 				if n, err := strconv.ParseInt(ms, 10, 64); err == nil {
-					detail = "on; last took " + name + "'s, changed " + time.UnixMilli(n).In(env.Now().Location()).Format("Mon 2 Jan 15:04")
+					detail = "on; last took " + name + "'s, changed " + envClock(env).Stamp(time.UnixMilli(n).In(env.Now().Location()), "Mon 2 Jan ")
 				}
 			}
 		}
@@ -606,14 +606,15 @@ func doctorBrowser(env Env, ok func(name, detail string)) {
 		ok("browser", "off: browser windows get no web address (trackd browser install)")
 		return
 	}
-	ok("browser", "the tock extension sends the tab in front (last "+time.UnixMilli(st.AtMS).In(env.Now().Location()).Format("15:04")+")")
+	ok("browser", "the tock extension sends the tab in front (last "+envClock(env).MS(st.AtMS, env.Now().Location())+")")
 }
 
 // doctorFailures reports trackd's failed writes and dropped samples: a
 // problem while recent, history after that.
 func doctorFailures(env Env, h app.Health, ok func(name, detail string), bad func(name, detail, fix string)) {
 	now := env.Now()
-	at := func(ms int64) string { return time.UnixMilli(ms).In(now.Location()).Format("Mon 2 Jan 15:04") }
+	clk := envClock(env)
+	at := func(ms int64) string { return clk.Stamp(time.UnixMilli(ms).In(now.Location()), "Mon 2 Jan ") }
 	switch {
 	case h.WriteFailedSince(now.UnixMilli()):
 		bad("writes", fmt.Sprintf("write_failed at %s (%d in all): %s", at(h.LastErrorMS), h.WriteFails, h.LastError),

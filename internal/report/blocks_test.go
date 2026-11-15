@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/span"
 )
 
@@ -40,7 +41,7 @@ func TestBlocks(t *testing.T) {
 	if b := bs[2]; b.Name != "Video" || b.Kind != classify.KindDistract || b.Project != "" {
 		t.Fatalf("third = %+v", b)
 	}
-	if got := BlockLine(bs[0], time.UTC); got != "00:00–01:10   1h10  tock (Code) · deep 93% · distracted 5m · term, arc" {
+	if got := BlockLine(bs[0], time.UTC, clockfmt.H24); got != "00:00–01:10   1h10  tock (Code) · deep 93% · distracted 5m · term, arc" {
 		t.Fatalf("line = %q", got)
 	}
 }

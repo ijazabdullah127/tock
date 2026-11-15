@@ -10,6 +10,7 @@ import (
 
 	"tock/internal/app"
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/report"
 )
 
@@ -17,20 +18,21 @@ import (
 // picker for an edit over it: an added entry, or a label over part of the
 // timeline (a split).
 type rangeDlg struct {
+	clk   clockfmt.Clock
 	kind  string // classify.EditAdd or classify.EditLabel
 	title string
-	text  string // "HH:MM-HH:MM"
+	text  string // "HH:MM-HH:MM", or 12-hour "9:05am-10:40am"
 	day   time.Time
 }
 
-func clockText(ms int64, loc *time.Location) string {
-	return time.UnixMilli(ms).In(loc).Format("15:04")
+func clockText(ms int64, loc *time.Location, clk clockfmt.Clock) string {
+	return clk.MS(ms, loc)
 }
 
 // newRangeDlg starts with [from, to) filled in.
-func newRangeDlg(kind, title string, from, to int64, day time.Time) *rangeDlg {
+func newRangeDlg(kind, title string, from, to int64, day time.Time, clk clockfmt.Clock) *rangeDlg {
 	loc := day.Location()
-	return &rangeDlg{kind: kind, title: title, text: clockText(from, loc) + "-" + clockText(to, loc), day: day}
+	return &rangeDlg{kind: kind, title: title, text: clockText(from, loc, clk) + "-" + clockText(to, loc, clk), day: day, clk: clk}
 }
 
 // parse reads the text as a range on the dialog's day.
@@ -40,12 +42,12 @@ func (d *rangeDlg) parse(now time.Time) (int64, int64, error) {
 		return 0, 0, errors.New("want HH:MM-HH:MM")
 	}
 	clock := func(s string) (int64, error) {
-		t, err := time.Parse("15:04", strings.TrimSpace(s))
-		if err != nil {
+		min, ok := clockfmt.ParseMin(s)
+		if !ok {
 			return 0, fmt.Errorf("%q is not HH:MM", s)
 		}
 		y, m, dd := d.day.Date()
-		return time.Date(y, m, dd, t.Hour(), t.Minute(), 0, 0, d.day.Location()).UnixMilli(), nil
+		return time.Date(y, m, dd, min/60, min%60, 0, 0, d.day.Location()).UnixMilli(), nil
 	}
 	from, err := clock(a)
 	if err != nil {
@@ -82,12 +84,12 @@ func (m Model) rangeKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		m.edit = nil
-		what := clockText(from, d.day.Location()) + "–" + clockText(to, d.day.Location()) + " (" + report.Dur(to-from) + ")"
+		what := clockText(from, d.day.Location(), d.clk) + "–" + clockText(to, d.day.Location(), d.clk) + " (" + report.Dur(to-from) + ")"
 		p := newPicker(m.src, pickEdit, nil, "", what)
 		p.editKind, p.editFrom, p.editTo = d.kind, from, to
 		m.picker = p
 	default:
-		if len(k) == 1 && strings.ContainsAny(k, "0123456789:-") && len(d.text) < 11 {
+		if len(k) == 1 && strings.ContainsAny(k, "0123456789:-apm") && len(d.text) < 15 {
 			d.text += k
 		}
 	}
@@ -119,7 +121,7 @@ func (m Model) editDone(p *picker) tea.Cmd {
 // deleteRow cuts the selected row's time out of the timeline.
 func (m Model) deleteRow(r *report.Row) tea.Cmd {
 	from, to := r.Start, r.End
-	what := clockText(from, m.now().Location()) + "–" + clockText(to, m.now().Location()) + " (" + report.Dur(to-from) + ")"
+	what := clockText(from, m.now().Location(), m.clk) + "–" + clockText(to, m.now().Location(), m.clk) + " (" + report.Dur(to-from) + ")"
 	return m.act(func(a *app.App) (string, error) {
 		_, err := a.AddEdit(classify.EditCut, from, to, classify.Want{}, "")
 		return "deleted " + what + " (u undo)", err

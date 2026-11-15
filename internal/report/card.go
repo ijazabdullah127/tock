@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"tock/internal/clockfmt"
 	"tock/internal/focus"
 )
 
@@ -13,9 +14,10 @@ import (
 // and the menu bar draw (08-UI-SPEC Surfaces 1 and 3) without recomputing
 // anything. Q is scored with the weights in force when it was built.
 type SessionDetail struct {
-	Sess focus.Session
-	Q    focus.QualityScore
-	Top  focus.Breakdown // categories, apps, project of the session window
+	Sess  focus.Session
+	Q     focus.QualityScore
+	Top   focus.Breakdown // categories, apps, project of the session window
+	Clock clockfmt.Clock  // how times of day are shown ([display] clock)
 }
 
 // DeepPct is the deep share of the session, rounded half up; 0 for a session
@@ -51,8 +53,7 @@ func (d SessionDetail) Summary(loc *time.Location) string {
 	if d.Sess.Kind != focus.KindAuto {
 		lead = focus.InterruptionsText(d.Sess.Interruptions)
 	}
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
-	return clock(d.Sess.StartMS) + "–" + clock(d.Sess.EndMS) + " · " + strconv.Itoa(d.DeepPct()) + "% deep · " + lead
+	return d.Clock.MS(d.Sess.StartMS, loc) + "–" + d.Clock.MS(d.Sess.EndMS, loc) + " · " + strconv.Itoa(d.DeepPct()) + "% deep · " + lead
 }
 
 // ShareText joins shares as "Analyse 1 24m · Anki 12m · Reading 6m" (card

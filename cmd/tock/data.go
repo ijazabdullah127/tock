@@ -8,6 +8,7 @@ import (
 
 	"tock/internal/app"
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/config"
 	"tock/internal/store"
 )
@@ -37,6 +38,16 @@ func openApp(env Env) (*app.App, error) {
 	}
 	fmt.Fprintf(env.Stderr, "wrote starter rules to %s (edit them, or label time in tock inbox)\n", env.rulesPath())
 	return openAppAsIs(env)
+}
+
+// envClock is the [display] clock setting, for times of day shown to
+// people; 24-hour when config.toml cannot be read.
+func envClock(env Env) clockfmt.Clock {
+	c, err := config.Load(env.configPath())
+	if err != nil {
+		return clockfmt.H24
+	}
+	return c.Display.ClockFormat()
 }
 
 // openAppAsIs is openApp without writing starter rules.

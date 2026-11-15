@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/x/ansi"
 
+	"tock/internal/clockfmt"
 	"tock/internal/report"
 	"tock/internal/span"
 	"tock/internal/stats"
@@ -155,7 +156,7 @@ func (t *todayTab) notes(w int) []string {
 		out = append(out, fit(" "+sDim.Render("commits  ")+sText.Render(report.CommitsLine(d.Commits)), w))
 	}
 	if len(d.Blocks) > 0 {
-		out = append(out, fit(" "+sDim.Render("work  ")+workLine(d.Blocks, d.Date.Location()), w))
+		out = append(out, fit(" "+sDim.Render("work  ")+workLine(d.Blocks, d.Date.Location(), d.Clock), w))
 	}
 	if d.Summary != "" {
 		out = append(out, fit(" "+sBrand.Render("✎ ")+sText.Render(report.Safe(d.Summary)), w))
@@ -177,19 +178,19 @@ func (t *todayTab) outages() []string {
 	loc := t.day.Date.Location()
 	var out []string
 	if len(none) > 0 {
-		out = append(out, " "+sAccent.Render("not recording  ")+sText.Render(report.OutagesLine(none, loc)))
+		out = append(out, " "+sAccent.Render("not recording  ")+sText.Render(report.OutagesLine(none, loc, t.day.Clock)))
 	}
 	if len(partial) > 0 {
-		out = append(out, " "+sAccent.Render("apps only  ")+sText.Render(report.OutagesLine(partial, loc)))
+		out = append(out, " "+sAccent.Render("apps only  ")+sText.Render(report.OutagesLine(partial, loc, t.day.Clock)))
 	}
 	return out
 }
 
 // workLine lists the work blocks as "09:00 tock 1h40 · 11:05 Study 50m".
-func workLine(blocks []report.Block, loc *time.Location) string {
+func workLine(blocks []report.Block, loc *time.Location, clk clockfmt.Clock) string {
 	parts := make([]string, len(blocks))
 	for i, b := range blocks {
-		parts[i] = z(fmt.Sprintf("at:%d", b.Start), sDim.Render(time.UnixMilli(b.Start).In(loc).Format("15:04")+" ")+
+		parts[i] = z(fmt.Sprintf("at:%d", b.Start), sDim.Render(clk.MS(b.Start, loc)+" ")+
 			kindStyle(b.Kind).Render(report.Safe(b.Name))+" "+sBright.Render(report.Dur(b.ActiveMS)))
 	}
 	return strings.Join(parts, sFaint.Render(" · "))
@@ -201,7 +202,7 @@ func (t *todayTab) attention() string {
 	d := t.day
 	if n := len(d.Away); n > 0 {
 		iv := d.Away[n-1]
-		line := " " + sAccent.Bold(true).Render("⚑ Away "+awayWhat(iv, d.Date.Location()))
+		line := " " + sAccent.Bold(true).Render("⚑ Away "+awayWhat(iv, d.Date.Location(), d.Clock))
 		if b := t.before(iv); b.Category != "" {
 			line += sText.Render(" after ") + kindStyle(t.kindOf(b.Category)).Render(report.Safe(report.LabelText(b.Category, b.Project))) +
 				sText.Render(" — still on it?   ") + keycap("y", "yes") + "   " + keycap("a", "something else") + "   " + keycap("A", "leave idle")
@@ -282,12 +283,12 @@ func heatLines(d report.Day, w int) []string {
 	n := hrs.Last - hrs.First + 1
 	cell := min(max((w-label)/max(n, 1), 1), 4)
 	step := 1
-	for step*cell < 3 {
+	for step*cell < d.Clock.Width()-2 {
 		step++
 	}
 	axis := []byte(strings.Repeat(" ", n*cell+2))
 	for h := hrs.First; h <= hrs.Last; h += step {
-		copy(axis[(h-hrs.First)*cell:], fmt.Sprintf("%02d", h))
+		copy(axis[(h-hrs.First)*cell:], d.Clock.Hour(h))
 	}
 	out := []string{strings.Repeat(" ", label) + sFaint.Render(strings.TrimRight(string(axis), " "))}
 	for _, k := range report.Kinds {
@@ -298,7 +299,7 @@ func heatLines(d report.Day, w int) []string {
 		var b strings.Builder
 		for h := hrs.First; h <= hrs.Last; h++ {
 			at := time.Date(d.Date.Year(), d.Date.Month(), d.Date.Day(), h, 30, 0, 0, d.Date.Location()).UnixMilli()
-			b.WriteString(tip(fmt.Sprintf("at:%d", at), fmt.Sprintf("%02d:00  %s %s", h, report.Dur(hours[h]), kindName(k)),
+			b.WriteString(tip(fmt.Sprintf("at:%d", at), d.Clock.Min(h*60)+"  "+report.Dur(hours[h])+" "+kindName(k),
 				strings.Repeat(shade(hours[h]), cell)))
 		}
 		st := kindStyle(k)
@@ -410,9 +411,9 @@ func (t todayTab) sidebar(w, h int) []string {
 		var bl []string
 		loc := d.Date.Location()
 		for _, b := range d.Blocks {
-			line := sDim.Render(time.UnixMilli(b.Start).In(loc).Format("15:04")+" ") +
-				kindStyle(b.Kind).Render(fit(report.Safe(b.Name), inner-13)) + sBright.Render(fitRight(report.Dur(b.ActiveMS), 6))
-			bl = append(bl, tip(fmt.Sprintf("at:%d", b.Start), "jump to "+time.UnixMilli(b.Start).In(loc).Format("15:04"), fit(line, inner)))
+			line := sDim.Render(d.Clock.ColMS(b.Start, loc)+" ") +
+				kindStyle(b.Kind).Render(fit(report.Safe(b.Name), inner-8-d.Clock.Width())) + sBright.Render(fitRight(report.Dur(b.ActiveMS), 6))
+			bl = append(bl, tip(fmt.Sprintf("at:%d", b.Start), "jump to "+d.Clock.MS(b.Start, loc), fit(line, inner)))
 		}
 		out = append(out, card("Work blocks", bl, w)...)
 	}
@@ -432,7 +433,7 @@ func (t todayTab) empty(w int, now time.Time) []string {
 				if g.Partial() {
 					label = "apps only "
 				}
-				lines = append(lines, sAccent.Render(label)+sText.Render(report.OutagesLine([]stats.Gap{g}, t.day.Date.Location())))
+				lines = append(lines, sAccent.Render(label)+sText.Render(report.OutagesLine([]stats.Gap{g}, t.day.Date.Location(), t.day.Clock)))
 			}
 		}
 		lines = append(lines, "", keycap("l", "next day")+"   "+keycap(".", "back to today"))
@@ -455,7 +456,7 @@ func (t todayTab) empty(w int, now time.Time) []string {
 // timelineRow is one timeline row: times, the label with its dot, the app
 // and the text; an unlabelled row with a suggestion ends with it.
 func (t todayTab) timelineRow(i int, r report.Row, w int, sel bool, loc *time.Location) string {
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
+	clock := func(ms int64) string { return t.day.Clock.ColMS(ms, loc) }
 	mark := "  "
 	if sel {
 		mark = sBrand.Bold(true).Render("▸ ")
@@ -477,7 +478,7 @@ func (t todayTab) timelineRow(i int, r report.Row, w int, sel bool, loc *time.Lo
 	} else if inv != "" {
 		tail = sDim.Render("on " + inv)
 	}
-	fixed := 2 + 11 + 2 + 5 + 2 + labelW + 2 + 10 + 2
+	fixed := 2 + 2*t.day.Clock.Width() + 1 + 2 + 5 + 2 + labelW + 2 + 10 + 2
 	textW := max(w-fixed-ansi.StringWidth(tail)-1, 0)
 	text := sDim.Render(fit(r.Text, textW))
 	times := sText.Render(clock(r.Start)) + sFaint.Render("–") + sText.Render(clock(r.End))

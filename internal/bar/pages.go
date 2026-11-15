@@ -128,7 +128,7 @@ func dayDial(d report.Day, loc *time.Location, nowMS int64) *Dial {
 	}
 	if nowMS >= day0 && nowMS < day1 {
 		out.Now = float64(nowMS-day0) / span
-		out.Center = clock(nowMS, loc)
+		out.Center = d.Clock.MS(nowMS, loc)
 	} else {
 		out.Center = d.Date.Format("Mon")
 	}
@@ -220,9 +220,9 @@ func (s Snapshot) sessionPage(nowMS int64) Page {
 	if s.Live.Level >= 0 {
 		p.Cells = append(p.Cells, Cell{K: "Focus", V: strconv.Itoa(s.Live.Level) + "%"})
 	}
-	p.Cells = append(p.Cells, Cell{K: "Started", V: clock(ss.StartMS, s.loc())})
+	p.Cells = append(p.Cells, Cell{K: "Started", V: s.clock(ss.StartMS)})
 	if ss.PlannedMS > 0 {
-		p.Cells = append(p.Cells, Cell{K: "Ends", V: clock(ss.PlannedMS, s.loc())})
+		p.Cells = append(p.Cells, Cell{K: "Ends", V: s.clock(ss.PlannedMS)})
 	}
 	return p
 }
@@ -254,7 +254,7 @@ func todayPage(d report.Day, u app.Usual, loc *time.Location, nowMS int64) Page 
 			for k, ms := range d.Hours.MS {
 				by[k] = ms[h]
 			}
-			mid.Bars = append(mid.Bars, BarCol{Label: fmt.Sprintf("%02d", h), Parts: parts(by)})
+			mid.Bars = append(mid.Bars, BarCol{Label: d.Clock.Hour(h), Parts: parts(by)})
 		}
 		p.Mid = mid
 	}

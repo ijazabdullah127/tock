@@ -223,7 +223,8 @@ func (s Snapshot) loc() *time.Location {
 	return time.Local
 }
 
-func clock(ms int64, loc *time.Location) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
+// clock is the time of day of ms in the snapshot's zone and clock format.
+func (s Snapshot) clock(ms int64) string { return s.Clock.MS(ms, s.loc()) }
 
 // IslandBase is what the notch shows at nowMS with no moment open.
 func (s Snapshot) IslandBase(nowMS int64) Island {
@@ -241,7 +242,7 @@ func (s Snapshot) IslandBase(nowMS int64) Island {
 		return Island{State: IslandBreak,
 			Face: Face{Dot: DotBreak, Left: "Break", Right: report.Countdown(end - nowMS), RightDim: "left", EndMS: end},
 			Hover: &Panel{Face: Face{Dot: DotBreak, Left: "Break", Right: report.Countdown(end - nowMS), RightDim: "left", EndMS: end},
-				Lead: "Break", Sub: "until " + clock(end, s.loc())}}
+				Lead: "Break", Sub: "until " + s.clock(end)}}
 	}
 	return s.quietIsland()
 }
@@ -298,9 +299,9 @@ func (s Snapshot) focusIsland(ss focus.Session, nowMS int64) Island {
 	if s.DistractAtMS > 0 && nowMS-s.DistractAtMS < driftShowMS {
 		state, f.Dot, f.Left = IslandDrift, "distract", "Off task"
 	}
-	sub := "since " + clock(ss.StartMS, s.loc())
+	sub := "since " + s.clock(ss.StartMS)
 	if ss.PlannedMS > 0 {
-		sub = clock(ss.StartMS, s.loc()) + " to " + clock(ss.PlannedMS, s.loc())
+		sub = s.clock(ss.StartMS) + " to " + s.clock(ss.PlannedMS)
 	}
 	if s.Live.Level >= 0 {
 		sub += fmt.Sprintf(" · focus %d%%", s.Live.Level)
@@ -336,7 +337,7 @@ func startsIn(startMS, nowMS int64) (string, string) {
 func (s Snapshot) meetIsland(sl focus.Slot, nowMS int64) Island {
 	dim, when := startsIn(sl.StartMS, nowMS)
 	f := Face{Dot: "shallow", Left: report.Cut(sl.Title, goalCells), RightDim: dim, Right: when}
-	sub := clock(sl.StartMS, s.loc()) + " to " + clock(sl.EndMS, s.loc())
+	sub := s.clock(sl.StartMS) + " to " + s.clock(sl.EndMS)
 	if sl.Calendar != "" {
 		sub += " · " + sl.Calendar
 	}
@@ -393,7 +394,7 @@ func DoneIsland(n store.Notice, d app.NoticeData, detail *report.SessionDetail, 
 		if ss.Goal != "" {
 			p.Lead = ss.Goal
 		}
-		p.Sub = clock(ss.StartMS, loc) + " to " + clock(ss.EndMS, loc)
+		p.Sub = detail.Clock.MS(ss.StartMS, loc) + " to " + detail.Clock.MS(ss.EndMS, loc)
 		if ss.PlannedMS > 0 && ss.EndMS >= ss.PlannedMS-60_000 {
 			p.Sub += " · ended on time"
 		}
@@ -538,7 +539,7 @@ func dayStrip(d report.Day, loc *time.Location) ([]string, []string) {
 	first, last := h0.Hour(), h1.Hour()+1
 	every := max(1, (last-first+5)/6)
 	for h := first; h <= last; h += every {
-		axis = append(axis, fmt.Sprintf("%02d", h%24))
+		axis = append(axis, d.Clock.Hour(h%24))
 	}
 	return out, axis
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"tock/internal/suggest"
 )
@@ -50,7 +49,7 @@ func cmdSuggest(env Env, args []string) error {
 		fmt.Fprintln(env.Stdout, "nothing to send")
 		return nil
 	case suggest.Wait:
-		at := time.UnixMilli(p.NextMS).In(env.Now().Location()).Format("15:04")
+		at := envClock(env).MS(p.NextMS, env.Now().Location())
 		fmt.Fprintf(env.Stdout, "next batch after %s (tock suggest --force)\n", at)
 		return nil
 	}

@@ -134,7 +134,7 @@ func printBlocks(env Env, d report.Day) {
 		return
 	}
 	for _, b := range d.Blocks {
-		fmt.Fprintln(env.Stdout, report.BlockLine(b, loc))
+		fmt.Fprintln(env.Stdout, report.BlockLine(b, loc, d.Clock))
 		if b.Summary != "" {
 			fmt.Fprintf(env.Stdout, "               %s\n", report.Safe(b.Summary))
 		}

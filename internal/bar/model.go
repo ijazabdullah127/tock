@@ -13,6 +13,7 @@ import (
 
 	"tock/internal/app"
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/config"
 	"tock/internal/focus"
 	"tock/internal/recommend"
@@ -112,6 +113,7 @@ type Snapshot struct {
 	Slots        []focus.Slot   // today's plan items and calendar events, start order
 	SlotsErr     error          // why Slots could not be read, for the caller to log; the rest of the snapshot is still good
 	Loc          *time.Location // zone for the clock times of Slots; nil = local
+	Clock        clockfmt.Clock // how times of day are shown ([display] clock)
 	Rec          *recommend.Rec // the pending recommendation (sent under 30 min ago, no reply), or nil
 	RecErr       error          // why Rec could not be read, for the caller to log; the rest of the snapshot is still good
 	BreakUntil   time.Time      // the break the user took ends then; zero = none running
@@ -204,7 +206,7 @@ func Load(a *app.App, now time.Time, access string) (Snapshot, error) {
 	}
 	s.Privacy, s.PrivacyErr = loadPrivacy(a, cfg.Privacy)
 	s.Last, s.LastErr = loadLast(a, now)
-	s.Loc = now.Location()
+	s.Loc, s.Clock = now.Location(), cfg.Display.ClockFormat()
 	if s.Slots, err = a.Slots(now); err != nil {
 		s.Slots, s.SlotsErr = nil, fmt.Errorf("bar: slots: %w", err)
 	}
@@ -324,7 +326,7 @@ func (s Snapshot) header(nowMS int64) []Item {
 		name := cmp.Or(ss.Goal, "Session")
 		out = append(out, label("%s · %s left · %s%d %s", name, report.Countdown(ss.PlannedMS-nowMS), lv, ss.Interruptions, word))
 		if s.snoozed(nowMS) {
-			out = append(out, label("Notices snoozed until %s", s.SnoozeUntil.Format("15:04")))
+			out = append(out, label("Notices snoozed until %s", s.Clock.Time(s.SnoozeUntil)))
 		}
 	}
 	if s.TooOld {
@@ -504,7 +506,7 @@ func (s Snapshot) slotItems(nowMS int64) []Item {
 		if sl.StartMS > nowMS {
 			when = fmt.Sprintf("in %d min", max((sl.StartMS-nowMS+59_999)/60_000, 1))
 		}
-		out = append(out, label("Next: %s %s (%s)", time.UnixMilli(sl.StartMS).In(loc).Format("15:04"),
+		out = append(out, label("Next: %s %s (%s)", s.Clock.MS(sl.StartMS, loc),
 			focus.SlotName(sl, ProjectCells), when))
 		break
 	}
@@ -526,7 +528,7 @@ func (s Snapshot) recItems(nowMS int64) []Item {
 		if loc == nil {
 			loc = time.Local
 		}
-		out = append(out, label("Break · until %s", s.BreakUntil.In(loc).Format("15:04")))
+		out = append(out, label("Break · until %s", s.Clock.Time(s.BreakUntil.In(loc))))
 	}
 	r := s.Rec
 	if s.Session != nil || r == nil || !r.Open(nowMS) {

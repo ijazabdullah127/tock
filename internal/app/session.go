@@ -105,7 +105,7 @@ func (a *App) SessionDetail(id int64) (report.SessionDetail, error) {
 	if err != nil {
 		return report.SessionDetail{}, err
 	}
-	return report.SessionDetail{Sess: s, Q: focus.Quality(s, w), Top: top}, nil
+	return report.SessionDetail{Sess: s, Q: focus.Quality(s, w), Top: top, Clock: a.cfg.Display.ClockFormat()}, nil
 }
 
 // RunningSession is the running manual session, nil when none runs.

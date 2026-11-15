@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/span"
 )
 
@@ -157,8 +158,8 @@ func buildBlock(g blockRun, views []classify.SpanView, labels []classify.Label) 
 }
 
 // BlockLine is one block as text: "09:00–10:40  1h40  tock (Code) · deep 92% · WezTerm, github.com".
-func BlockLine(b Block, loc *time.Location) string {
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
+func BlockLine(b Block, loc *time.Location, clk clockfmt.Clock) string {
+	clock := func(ms int64) string { return clk.ColMS(ms, loc) }
 	name := Safe(b.Name)
 	if b.Project != "" && b.Category != "" {
 		name += " (" + Safe(b.Category) + ")"

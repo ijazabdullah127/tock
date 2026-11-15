@@ -131,7 +131,7 @@ func sessionStart(env Env, args []string) error {
 		tail += " · " + s.Goal
 	}
 	fmt.Fprintf(env.Stdout, "session started: %d min, ends %s%s\n", n,
-		time.UnixMilli(s.PlannedMS).In(env.Now().Location()).Format("15:04"), tail)
+		envClock(env).MS(s.PlannedMS, env.Now().Location()), tail)
 	if h, err := a.Health(); err == nil && !h.TrackdUp {
 		fmt.Fprintln(env.Stderr, "warning: trackd not running, no alerts")
 	}
@@ -148,7 +148,7 @@ func sessionStop(env Env) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(env.Stdout, "stopped: "+report.SessionLine(s, env.Now().Location(), false))
+	fmt.Fprintln(env.Stdout, "stopped: "+strings.TrimLeft(report.SessionLine(s, env.Now().Location(), envClock(env), false), " "))
 	return nil
 }
 
@@ -201,7 +201,7 @@ func sessionSnooze(env Env, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(env.Stdout, "distraction notices snoozed for %d min, until %s\n", int(d.Minutes()), until.Format("15:04"))
+	fmt.Fprintf(env.Stdout, "distraction notices snoozed for %d min, until %s\n", int(d.Minutes()), envClock(env).Time(until))
 	return nil
 }
 
@@ -323,7 +323,7 @@ func sessionRate(env Env, args []string) error {
 		return fmt.Errorf("session rate: %w", err)
 	}
 	out := fmt.Sprintf("rated session %d (%s, %s, q%d) ★%d", s.ID,
-		time.UnixMilli(s.StartMS).In(env.Now().Location()).Format("Mon 15:04"),
+		envClock(env).Stamp(time.UnixMilli(s.StartMS).In(env.Now().Location()), "Mon "),
 		report.Dur(s.EndMS-s.StartMS), focus.Quality(s, w).Score, n)
 	if np != nil {
 		out += " · note saved"
@@ -398,6 +398,7 @@ func sessionList(env Env) error {
 	if err != nil {
 		return err
 	}
+	clk := a.Config().Display.ClockFormat()
 	defer a.Close()
 	f, err := a.Focus(env.Now())
 	if err != nil {
@@ -433,7 +434,7 @@ func sessionList(env Env) error {
 			note = strings.TrimSuffix(w+" · "+note, " · ")
 		}
 		fmt.Fprintf(tw, "%*d\t%s\t%s\t%s\t%d%%\t%d\t%s\t%s\t%s\n", width, s.ID,
-			time.UnixMilli(s.StartMS).In(loc).Format("Mon 15:04"), s.Kind, report.Dur(s.EndMS-s.StartMS),
+			clk.Stamp(time.UnixMilli(s.StartMS).In(loc), "Mon "), s.Kind, report.Dur(s.EndMS-s.StartMS),
 			report.DeepPct(s, f.NowMS), focus.Quality(s, w).Score, star, ints, note)
 	}
 	if err := tw.Flush(); err != nil {

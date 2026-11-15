@@ -43,7 +43,7 @@ func cmdRecommend(env Env, args []string) error {
 			return nil
 		}
 		until := time.UnixMilli(r.AtMS + recommend.PendingMS).In(now.Location())
-		fmt.Fprintf(env.Stdout, "Suggested: %s · open until %s\n", report.RecText(*r), until.Format("15:04"))
+		fmt.Fprintf(env.Stdout, "Suggested: %s · open until %s\n", report.RecText(*r), envClock(env).Time(until))
 		return nil
 	}
 	if r == nil {
@@ -59,7 +59,7 @@ func cmdRecommend(env Env, args []string) error {
 		return err
 	}
 	if res.BreakUntilMS > 0 {
-		fmt.Fprintf(env.Stdout, "break until %s\n", res.BreakUntil.Format("15:04"))
+		fmt.Fprintf(env.Stdout, "break until %s\n", envClock(env).Time(res.BreakUntil))
 		return nil
 	}
 	if res.Session != nil {

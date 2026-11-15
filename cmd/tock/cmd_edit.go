@@ -9,6 +9,7 @@ import (
 
 	"tock/internal/app"
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/report"
 )
 
@@ -92,7 +93,8 @@ func cmdEdit(env Env, args []string) error {
 			fmt.Fprintln(env.Stdout, n)
 		}
 	}()
-	r := fmt.Sprintf("%s–%s (%s)", from.Format("15:04"), to.Format("15:04"), report.Dur(to.Sub(from).Milliseconds()))
+	clk := envClock(env)
+	r := fmt.Sprintf("%s–%s (%s)", clk.Time(from), clk.Time(to), report.Dur(to.Sub(from).Milliseconds()))
 	switch kind {
 	case classify.EditCut:
 		fmt.Fprintf(env.Stdout, "deleted %s\n", r)
@@ -115,12 +117,12 @@ func parseRange(s string, day, now time.Time) (time.Time, time.Time, error) {
 		if c == "now" {
 			return now.Truncate(time.Minute), nil
 		}
-		t, err := time.Parse("15:04", c)
-		if err != nil || len(c) != 5 {
+		min, ok := clockfmt.ParseMin(c)
+		if !ok {
 			return time.Time{}, fmt.Errorf("%q is not HH:MM", c)
 		}
 		y, m, d := day.Date()
-		return time.Date(y, m, d, t.Hour(), t.Minute(), 0, 0, day.Location()), nil
+		return time.Date(y, m, d, min/60, min%60, 0, 0, day.Location()), nil
 	}
 	from, err := clock(a)
 	if err != nil {
@@ -147,7 +149,8 @@ func listEdits(env Env, a *app.App, day time.Time) error {
 		return nil
 	}
 	loc := env.Now().Location()
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
+	clk := a.Config().Display.ClockFormat()
+	clock := func(ms int64) string { return clk.ColMS(ms, loc) }
 	for _, e := range es {
 		what := map[string]string{classify.EditAdd: "add", classify.EditCut: "delete", classify.EditLabel: "label"}[e.Kind]
 		line := fmt.Sprintf("%4d  %-6s %s–%s  %5s", e.ID, what, clock(e.StartMS), clock(e.EndMS), report.Dur(e.EndMS-e.StartMS))
@@ -187,9 +190,10 @@ func cmdUndo(env Env, args []string) error {
 		if len(us) == 0 {
 			fmt.Fprintln(env.Stdout, "nothing to undo")
 		}
-		loc := env.Now().Location()
+		loc, clk := env.Now().Location(), envClock(env)
 		for _, u := range us {
-			fmt.Fprintf(env.Stdout, "%s  %s\n", time.UnixMilli(u.AtMS).In(loc).Format("Mon 15:04"), report.Safe(u.What))
+			at := time.UnixMilli(u.AtMS).In(loc)
+			fmt.Fprintf(env.Stdout, "%s  %s\n", at.Format("Mon ")+clk.Col(at), report.Safe(u.What))
 		}
 		return nil
 	}

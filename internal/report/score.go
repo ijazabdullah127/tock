@@ -3,7 +3,6 @@ package report
 import (
 	"fmt"
 	"strings"
-	"time"
 )
 
 // ScoreLine renders the plain score summary shared by the TUI and tock
@@ -49,7 +48,7 @@ func HoursText(d Day) string {
 		return "day off"
 	}
 	loc := d.Date.Location()
-	return time.UnixMilli(d.From).In(loc).Format("15:04") + "–" + time.UnixMilli(d.To).In(loc).Format("15:04")
+	return d.Clock.MS(d.From, loc) + "–" + d.Clock.MS(d.To, loc)
 }
 
 func plural(n int, one, many string) string {

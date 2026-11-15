@@ -9,6 +9,7 @@ import (
 
 	"tock/internal/app"
 	"tock/internal/classify"
+	"tock/internal/clockfmt"
 	"tock/internal/report"
 	"tock/internal/span"
 )
@@ -240,15 +241,15 @@ func (t *todayTab) before(iv classify.Interval) classify.Want {
 // awayPicker labels the absence iv; what it follows leads the quick
 // options.
 func (m *Model) awayPicker(iv classify.Interval) *picker {
-	p := newAwayPicker(m.src, iv, awayWhat(iv, m.now().Location()))
+	p := newAwayPicker(m.src, iv, awayWhat(iv, m.now().Location(), m.clk))
 	if b := m.today.before(iv); b.Category != "" {
 		p.quick = append(p.quick, option{name: report.LabelText(b.Category, b.Project), note: "◷ before", want: &b})
 	}
 	return p.withQuick(m, "")
 }
 
-func awayWhat(iv classify.Interval, loc *time.Location) string {
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
+func awayWhat(iv classify.Interval, loc *time.Location, clk clockfmt.Clock) string {
+	clock := func(ms int64) string { return clk.MS(ms, loc) }
 	return clock(iv.From) + "–" + clock(iv.To) + " (" + report.Dur(iv.To-iv.From) + ")"
 }
 
@@ -320,7 +321,7 @@ func (m Model) todayKey(k string) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		mid := (r.Start + (r.End-r.Start)/2) / 60_000 * 60_000
-		m.edit = newRangeDlg(classify.EditLabel, "Split: label part of it", mid, r.End, t.day.Date)
+		m.edit = newRangeDlg(classify.EditLabel, "Split: label part of it", mid, r.End, t.day.Date, t.day.Clock)
 		return m, nil
 	case "+":
 		from, to := m.now().UnixMilli()-30*60_000, m.now().UnixMilli()
@@ -330,7 +331,7 @@ func (m Model) todayKey(k string) (tea.Model, tea.Cmd) {
 			from = t.day.Date.Add(9 * time.Hour).UnixMilli()
 			to = from + 60*60_000
 		}
-		m.edit = newRangeDlg(classify.EditAdd, "Add time", from, to, t.day.Date)
+		m.edit = newRangeDlg(classify.EditAdd, "Add time", from, to, t.day.Date, t.day.Clock)
 		return m, nil
 	case "a", "A", "y":
 		n := len(t.day.Away)
@@ -345,7 +346,7 @@ func (m Model) todayKey(k string) (tea.Model, tea.Cmd) {
 				m.setFlash("nothing labelled right before it: a to label it", true)
 				return m, nil
 			}
-			what := awayWhat(iv, m.now().Location())
+			what := awayWhat(iv, m.now().Location(), m.clk)
 			return m, m.act(func(a *app.App) (string, error) {
 				return "labelled away " + what + " → " + report.LabelText(b.Category, b.Project), a.Answer(iv, b)
 			})
@@ -354,7 +355,7 @@ func (m Model) todayKey(k string) (tea.Model, tea.Cmd) {
 			m.picker = m.awayPicker(iv)
 			return m, nil
 		}
-		what := awayWhat(iv, m.now().Location())
+		what := awayWhat(iv, m.now().Location(), m.clk)
 		return m, m.act(func(a *app.App) (string, error) {
 			return "left " + what + " idle", a.Answer(iv, classify.Want{})
 		})

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"tock/internal/clockfmt"
 	"tock/internal/report"
 )
 
@@ -66,9 +67,9 @@ func ribbon(d report.Day, w int, loc *time.Location) []string {
 			}
 		}
 		mid := (c0 + c1) / 2
-		text := time.UnixMilli(c0).In(loc).Format("15:04")
+		text := d.Clock.MS(c0, loc)
 		if tipRow != nil {
-			text = rowTip(*tipRow, loc)
+			text = rowTip(*tipRow, loc, d.Clock)
 		} else if idle > 0 {
 			text += " idle"
 		}
@@ -79,7 +80,7 @@ func ribbon(d report.Day, w int, loc *time.Location) []string {
 			if t0.Minute() == 0 {
 				hh = h
 			}
-			label := fmt.Sprintf("%02d", hh)
+			label := d.Clock.Hour(hh)
 			for axis.Len() < i {
 				axis.WriteByte(' ')
 			}
@@ -91,8 +92,8 @@ func ribbon(d report.Day, w int, loc *time.Location) []string {
 }
 
 // rowTip is a row in one line: "10:40–11:14  34m  Code / tock · WezTerm".
-func rowTip(r report.Row, loc *time.Location) string {
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
+func rowTip(r report.Row, loc *time.Location, clk clockfmt.Clock) string {
+	clock := func(ms int64) string { return clk.MS(ms, loc) }
 	label := rowLabel(r)
 	switch {
 	case r.Idle:

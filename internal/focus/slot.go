@@ -3,7 +3,6 @@ package focus
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/x/ansi"
 
@@ -216,7 +215,7 @@ func stepSlots(in Input) []Event {
 		return nil
 	}
 	loc := in.Day.Location()
-	clock := func(ms int64) string { return time.UnixMilli(ms).In(loc).Format("15:04") }
+	clock := func(ms int64) string { return in.Clock.MS(ms, loc) }
 	var out []Event
 	for _, s := range in.Slots {
 		if in.Plan.Notify && inUpcomingWindow(in, s) && !in.SlotSent[SlotSentKey(s.Key, SlotUpcoming)] {

@@ -70,7 +70,7 @@ func WriteWeekHTML(w io.Writer, wk Week, generated time.Time) error {
 	sun := wk.Monday.AddDate(0, 0, 6)
 	v := htmlWeek{Week: wk, Title: wk.Monday.Format("2 Jan 2006"),
 		Range:     wk.Monday.Format("Mon 2 Jan") + " – " + sun.Format("Sun 2 Jan 2006"),
-		Generated: generated.Format("2006-01-02 15:04"), AvgScore: "—", Commits: CommitsLine(wk.Commits)}
+		Generated: wk.Clock.Stamp(generated, "2006-01-02 "), AvgScore: "—", Commits: CommitsLine(wk.Commits)}
 	var maxMS int64
 	for _, d := range wk.Days {
 		maxMS = max(maxMS, d.TrackedMS)

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"tock/internal/clockfmt"
 	"tock/internal/report"
 )
 
@@ -39,7 +40,7 @@ func cmdCommits(env Env, args []string) error {
 	if err != nil {
 		return err
 	}
-	for _, l := range commitLines(r, *project, to.Sub(from) > 24*time.Hour, now.Location()) {
+	for _, l := range commitLines(r, *project, to.Sub(from) > 24*time.Hour, now.Location(), envClock(env)) {
 		fmt.Fprintln(env.Stdout, l)
 	}
 	return nil
@@ -47,7 +48,7 @@ func cmdCommits(env Env, args []string) error {
 
 // commitLines renders r: one line per commit, then the time since each
 // project's last commit. With days set each line starts with its date.
-func commitLines(r report.CommitReport, project string, days bool, loc *time.Location) []string {
+func commitLines(r report.CommitReport, project string, days bool, loc *time.Location, clk clockfmt.Clock) []string {
 	var rows []report.CommitRow
 	projW, hashW := 0, 0
 	for _, row := range r.Rows {
@@ -68,9 +69,9 @@ func commitLines(r report.CommitReport, project string, days bool, loc *time.Loc
 	stamp := func(ms int64) string {
 		at := time.UnixMilli(ms).In(loc)
 		if days {
-			return at.Format("Mon 2 15:04")
+			return at.Format("Mon 2 ") + clk.Col(at)
 		}
-		return at.Format("15:04")
+		return clk.Col(at)
 	}
 	// The header names the time columns: you, and agents when they worked.
 	head := fmt.Sprintf("%*s  %5s", len([]rune(stamp(rows[0].AtMS)))+2+projW+2+hashW, "", "you")

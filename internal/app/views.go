@@ -315,7 +315,7 @@ func (a *App) Day(day time.Time) (report.Day, error) {
 		return report.Day{}, err
 	}
 	d := report.BuildDay(report.DayInput{Date: from, NowMS: now, Views: vs, Labels: labels, Ignored: ignored,
-		Target: target, Weights: a.cfg.Score, Hours: a.cfg.Hours})
+		Target: target, Weights: a.cfg.Score, Hours: a.cfg.Hours, Clock: a.cfg.Display.ClockFormat()})
 	d.Cut = cut
 	if d.Away, err = a.pending(vs, from.UnixMilli(), to.UnixMilli()); err != nil {
 		return report.Day{}, err
@@ -370,7 +370,7 @@ func (a *App) Week(anyDay time.Time) (report.Week, error) {
 		return report.Week{}, err
 	}
 	in := report.WeekInput{Monday: mon, NowMS: now, Views: vs, Labels: labels, Weights: a.cfg.Score, Goals: a.rs.Goals,
-		Hours: a.cfg.Hours}
+		Hours: a.cfg.Hours, Clock: a.cfg.Display.ClockFormat()}
 	today := a.midnight(a.now())
 	for i := range in.Targets {
 		day := mon.AddDate(0, 0, i)

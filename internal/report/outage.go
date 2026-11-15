@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"tock/internal/clockfmt"
 	"tock/internal/stats"
 )
 
@@ -42,11 +43,10 @@ func GapWhy(g stats.Gap) string {
 
 // OutagesLine lists outages as "12:30–13:10 trackd stopped unexpectedly ·
 // 13:40–14:10 config.toml did not load", in loc; "" without any.
-func OutagesLine(gs []stats.Gap, loc *time.Location) string {
+func OutagesLine(gs []stats.Gap, loc *time.Location, clk clockfmt.Clock) string {
 	parts := make([]string, len(gs))
 	for i, g := range gs {
-		parts[i] = time.UnixMilli(g.From).In(loc).Format("15:04") + "–" +
-			time.UnixMilli(g.To).In(loc).Format("15:04") + " " + GapWhy(g)
+		parts[i] = clk.MS(g.From, loc) + "–" + clk.MS(g.To, loc) + " " + GapWhy(g)
 	}
 	return strings.Join(parts, " · ")
 }
