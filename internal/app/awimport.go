@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	"tock/internal/awimport"
+	"tock/internal/classify"
 	"tock/internal/store"
 )
 
 // AWMachine is the machine name imported ActivityWatch history goes under.
-const AWMachine = "activitywatch"
+const AWMachine = classify.ImportMachine
 
 // ImportResult is what an import read.
 type ImportResult struct {

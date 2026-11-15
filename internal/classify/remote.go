@@ -1,6 +1,15 @@
 package classify
 
-import ()
+import "strings"
+
+// ImportMachine is the machine imported ActivityWatch history goes under.
+// No tock runs there to label it, so its views are labelled here.
+const ImportMachine = "activitywatch"
+
+// IsImported reports a view of imported history.
+func IsImported(v SpanView) bool {
+	return IsRemote(v) && strings.HasPrefix(v.App, ImportMachine+" · ")
+}
 
 // RemoteIDBase keeps remote view ids apart from away and meeting view ids:
 // a remote view has ID -(RemoteIDBase + remote row id).

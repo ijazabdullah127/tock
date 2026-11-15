@@ -74,3 +74,23 @@ func TestFloor(t *testing.T) {
 		t.Fatalf("floor 0: rows = %d small = %+v", len(rows), small)
 	}
 }
+
+func TestFloorKeepsLargestWhenNothingClears(t *testing.T) {
+	items := []Item{{Key: "a", TotalMS: 90_000}, {Key: "b", TotalMS: 60_000}, {Key: "c", TotalMS: 1_000},
+		{Key: "d", TotalMS: 900}, {Key: "e", TotalMS: 800}, {Key: "f", TotalMS: 700}}
+	rows, small := Floor(items, 120_000)
+	if len(rows) != FloorKeep || rows[0].Key != "a" || len(small) != len(items)-FloorKeep || small[0].Key != "d" {
+		t.Fatalf("rows = %+v small = %+v", rows, small)
+	}
+}
+
+func TestInboxKeepsImportedViews(t *testing.T) {
+	vs := []SpanView{
+		{ID: -(RemoteIDBase + 1), Start: 0, End: 240_000, BundleID: "Xcode", App: ImportMachine + " · Xcode"},
+		{ID: -(RemoteIDBase + 2), Start: 240_000, End: 480_000, BundleID: "Xcode", App: "laptop · Xcode"},
+	}
+	got := Inbox(vs, make([]Label, len(vs)), nil)
+	if len(got) != 1 || got[0].App != ImportMachine+" · Xcode" {
+		t.Fatalf("inbox = %+v, want only the imported view", got)
+	}
+}

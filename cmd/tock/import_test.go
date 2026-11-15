@@ -46,6 +46,26 @@ func TestImportActivityWatch(t *testing.T) {
 	}
 }
 
+// TestImportedTimeReachesInbox: no tock runs where ActivityWatch recorded,
+// so its unlabelled time is labelled here, from the inbox.
+func TestImportedTimeReachesInbox(t *testing.T) {
+	te := newTestEnv(t, testRules)
+	file := filepath.Join(t.TempDir(), "aw.json")
+	export := `{"buckets": {"aw-watcher-window_x": {"type": "currentwindow", "events": [
+  {"timestamp": "2026-10-10T07:00:00Z", "duration": 240, "data": {"app": "Xcode", "title": "Build"}},
+  {"timestamp": "2026-10-10T07:04:00Z", "duration": 60, "data": {"app": "Mailer", "title": "Inbox"}}]}}}`
+	if err := os.WriteFile(file, []byte(export), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if code, _ := te.run(t, "", "import", "activitywatch", file); code != 0 {
+		t.Fatalf("import: code %d err %q", code, te.errb)
+	}
+	code, out := te.run(t, "", "inbox")
+	if code != 0 || !strings.Contains(out, "Xcode") || strings.Contains(out, "Inbox empty") {
+		t.Fatalf("inbox after import: code %d\n%s", code, out)
+	}
+}
+
 func TestImportActivityWatchHidden(t *testing.T) {
 	te := newTestEnv(t, testRules)
 	if err := os.WriteFile(filepath.Join(te.ConfigDir, "config.toml"), []byte("[privacy]\nhide_sites = [\"youtube.com\"]\n"), 0o600); err != nil {

@@ -94,17 +94,27 @@ func Inbox(views []SpanView, labels []Label, ignored map[string]bool) []Item {
 			views[i].BundleID != span.IdleBundleID &&
 			!IsAway(views[i]) && // answered in tock away; t relabels it
 			!IsMeeting(views[i]) && // event titles never reach the inbox or Claude
-			!IsRemote(views[i]) && // labelled on the machine it came from
+			(!IsRemote(views[i]) || IsImported(views[i])) && // labelled on the machine it came from
 			!ignored[Key(views[i])] &&
 			!ignored[LegacyKey(views[i])]
 	})
 }
 
+// FloorKeep is how many items Floor keeps when none is big enough.
+const FloorKeep = 3
+
 // Floor splits items into those with at least minMS of time, which keep
 // their own inbox row, and the small rest. minMS <= 0 keeps every item.
+// When none has minMS, the FloorKeep largest keep rows anyway, so an
+// inbox with unlabelled time is never empty (a first day, say). items are
+// sorted largest first, as Group returns them.
 func Floor(items []Item, minMS int64) (rows, small []Item) {
 	if minMS <= 0 {
 		return items, nil
+	}
+	if len(items) > 0 && items[0].TotalMS < minMS {
+		n := min(FloorKeep, len(items))
+		return items[:n], items[n:]
 	}
 	for _, it := range items {
 		if it.TotalMS >= minMS {
